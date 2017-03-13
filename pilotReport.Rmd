@@ -17,10 +17,29 @@ output:
 #### Methods summary: 
 [Write a brief summary of the methods underlying the target outcomes written in your own words]
 
+Pariticpants were given a hypothetical portfolio of 100 euros and were asked to distribute it between a risky option and a sfe option across monthly periods. 
+
+The safe option was a cash deposit account offering .25% rate of return each month. The risky option was the Spanish stock index fund which offerred monthly rates of return (obtained from July 1999 to September 2013). 
+
+For each monthly period, participants allocated how much money to put towards the safe option and how much to put towards the risky option.
+
+Participants were either in one of four conditions: "shock experience" (had to make investments across all 172 periods; experienced an initial decrease until period 40), "no-shock experience" (started at period 40), "shock description" (started at period 100 but viewed description of first 40 periods), and "no-shock description" (started at period 100 and did not view description of first 40 periods).
 ------
 
 #### Target outcomes: 
 [Insert the target outcomes identified in targetOutcomes.md]  
+
+The measure of risk taking **R** is defined as the **proportion of a person’s investment in the index fund (vs. the safe cash deposit)**.
+
+The target outcomes are: 
+1. Average proportion collapsed across all time points: Shock vs. No-shock groups took similar financial risks (shock condition; Rs = 29.7%) as did participants who were unaware of the trend (no-shock condition; Rns = 32.5%), Rs–ns = −2.8%, 95% CI [−7.2%, 1.6%].
+
+2. Shock description vs. No-shock description:  However, awareness of the shock affected participants who learned from description differently than it did those who learned from experience. Participants who learned from description took almost identical risk in the shock (Rsd = 37.1%) and no-shock conditions (Rnsd = 38.1%), Rsd–nsd = −1% [−7%, 5%]. 
+
+3. Shock experience vs. Shock description: However, historical prices had a small but discernible effect on the investment behavior of participants who experienced the market: Participants in the shock experience condition took less risk (Rse = 22.4%) than did participants in the no-shock experience condition (Rnse = 26.9%). Although this difference in the average R may not indicate a true population difference, Rse–nse = −4.5% [−11%, 1.7%], 
+
+4. This 4.5% absolute difference translates into a relative difference in risk taking of 20% in participants who did not experience the shock. Importantly, participants who experienced the shock also took less risk than participants who learned about it from description, Rse–sd = −14.7% [−20%, −0.1%].
+
 
 ------
 
@@ -40,16 +59,22 @@ library(knitr) # for kable table formating
 library(haven) # import and export 'SPSS', 'Stata' and 'SAS' Files
 library(readxl) # import excel files
 library(CODreports) # custom report functions
+library(forcats) #manipulating factors in data frames
 ```
 
 ## Step 2: Load data
 
 ```{r}
+d = read_tsv("data/data.txt")
 ```
 
 ## Step 3: Tidy data
 
 ```{r}
+#factor subject and condition columns
+str(d)
+d$subject = as_factor(d$subject)
+d$condition = as_factor(d$condition)
 ```
 
 ## Step 4: Run analysis
@@ -59,16 +84,90 @@ library(CODreports) # custom report functions
 [you can remove this section if no pre-processing is required]
 
 ```{r}
+d$perc_stock = d$perc_stock*100
+d = subset(d,d$period >= 100)
+
+d_avgs = d %>%
+  na.omit() %>%
+  group_by(subject,condition) %>%
+  summarise(mean_perc = mean(perc_stock))
+
+d_ShockExp = subset(d_avgs,d_avgs$condition == "Shock experience")
+
+d_NoShockExp = subset(d_avgs,d_avgs$condition == "No-shock experience")
+
+d_ShockDesc = subset(d_avgs,d_avgs$condition == "Shock description")
+
+d_NoShockDesc = subset(d_avgs,d_avgs$condition == "No-shock description")
+
+d_Shock = full_join(d_ShockExp,d_ShockDesc)
+d_NoShock = full_join(d_NoShockExp,d_NoShockDesc)
+d_Exp = full_join(d_ShockExp,d_NoShockExp)
+d_Desc = full_join(d_ShockDesc,d_NoShockDesc)
 ```
 
 ### Descriptive statistics
-
 ```{r}
+##### MEANS #####
+
+mean_Shock = mean(d_Shock$mean_perc) #matches value reported (29.7%)
+
+mean_NoShock = mean(d_NoShock$mean_perc) #matches value reported (32.5%)
+
+mean_ShockDesc = mean(d_ShockDesc$mean_perc)
+#matches value reported (37.1%)
+
+mean_NoShockDesc = mean(d_NoShockDesc$mean_perc)
+#matches value reported (38.1%)
+
+mean_ShockExp = mean(d_ShockExp$mean_perc) #matches value reported (22.4%)
+
+mean_NoShockExp = mean(d_NoShockExp$mean_perc) #matches value reported (26.9%)
+
+mean_ShockDesc = mean(d_ShockDesc$mean_perc)
+
+##### Difference in Means #####
+
+#1. Shock vs. No-Shock
+diff_Shock_NoShock = mean_Shock - mean_NoShock
+#matches value reported (-2.8%)
+
+#2. Shock Desc vs. No-Shock Desc
+diff_Desc = mean_ShockDesc - mean_NoShockDesc
+#matches value reported (-1%)
+
+#Shock Experience vs. No-Shock Experience
+diff_Exp = mean_ShockExp - mean_NoShockExp
+#matches value reported (-4.5%)
+
+#Shock Experience vs. Shock Description
+diff_ShockExpDesc = mean_ShockExp - mean_ShockDesc
+#matches value reported (-14.7%)
 ```
 
 ### Inferential statistics
 
 ```{r}
+#Shock Experience vs. No-Shock Experience
+t_1 = t.test(d_Shock$mean_perc, d_NoShock$mean_perc)
+
+df_1 = 100 + 100 - 2
+critical_t = qt(.975,df_1)
+sd_Shock = sd(d_Shock$mean_perc)
+sd_Shock_sq = sd_Shock^2
+sd_NoShock = sd(d_NoShock$mean_perc)
+sd_NoShock_sq = sd_NoShock^2
+sp = sqrt((99*sd_Shock_sq) + (99*sd_NoShock_sq)/df_1)
+
+critical_t*sp*sqrt((1/100)+(1/100))
+  
+compareValues(reportedValue = -4.5, obtainedValue = diff_ShockExpDesc,isP = F)
+
+#Shock Description vs. No-Shock Description
+t.test(d_ShockDesc$mean_perc, d_NoShockDesc$mean_perc)
+
+#Shock Experience vs. Shock Description
+t.test(d_ShockExp$mean_perc, d_ShockDesc$mean_perc)
 ```
 
 ## Step 5: Conclusion
