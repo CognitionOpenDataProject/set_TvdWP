@@ -239,7 +239,7 @@ div.tocify {
 </div>
 <div id="methods-summary" class="section level4">
 <h4>Methods summary:</h4>
-<p>Pariticpants were given a hypothetical portfolio of 100 euros and were asked to distribute it between a risky option and a safe option in each monthly period (1-172). The safe option was a cash deposit account offering .25% rate of return each month. The risky option was the Spanish stock index fund which offerred monthly rates of return (obtained from July 1999 to September 2013). Participants were in one of four conditions: “shock experience” (had to make investments across all 172 periods; experienced an initial decrease until period 40), “no-shock experience” (started at period 40), “shock description” (started at period 100 but viewed description of first 40 periods), and “no-shock description” (started at period 100 and did not view description of first 40 periods).</p>
+<p>Participants were given a hypothetical portfolio of 100 euros and were asked to distribute it between a risky option and a safe option in each monthly period (1-172). The safe option was a cash deposit account offering .25% rate of return each month. The risky option was the Spanish stock index fund which offered monthly rates of return (obtained from July 1999 to September 2013). Participants were in one of four conditions: “shock experience” (had to make investments across all 172 periods; experienced an initial decrease until period 40), “no-shock experience” (started at period 40), “shock description” (started at period 100 but viewed description of first 40 periods), and “no-shock description” (started at period 100 and did not view description of first 40 periods).</p>
 </div>
 <div id="target-outcomes" class="section level4">
 <h4>Target outcomes:</h4>
@@ -251,7 +251,6 @@ div.tocify {
 <li><p>Shock experience vs. Shock description: Participants who experienced the shock also took less risk than participants who learned about it from description, Rse–sd = −14.7% [−20%, −0.1%].</p></li>
 </ol>
 <hr />
-<p>The chunk below sets up some formatting options for the R Markdown document:</p>
 </div>
 <div id="step-1-load-packages" class="section level2">
 <h2>Step 1: Load packages</h2>
@@ -269,170 +268,247 @@ library(forcats) #manipulating factors in data frames</code></pre>
 </div>
 <div id="step-3-tidy-data" class="section level2">
 <h2>Step 3: Tidy data</h2>
-<pre class="r"><code>#factor subject and condition columns
-str(d)</code></pre>
-<pre><code>## Classes 'tbl_df', 'tbl' and 'data.frame':    34400 obs. of  4 variables:
-##  $ period    : int  1 2 3 4 5 6 7 8 9 10 ...
-##  $ subject   : chr  &quot;le1&quot; &quot;le1&quot; &quot;le1&quot; &quot;le1&quot; ...
-##  $ perc_stock: num  0 0.51 0.74 0.85 0.29 ...
-##  $ condition : chr  &quot;Shock experience&quot; &quot;Shock experience&quot; &quot;Shock experience&quot; &quot;Shock experience&quot; ...
-##  - attr(*, &quot;spec&quot;)=List of 2
-##   ..$ cols   :List of 4
-##   .. ..$ period    : list()
-##   .. .. ..- attr(*, &quot;class&quot;)= chr  &quot;collector_integer&quot; &quot;collector&quot;
-##   .. ..$ subject   : list()
-##   .. .. ..- attr(*, &quot;class&quot;)= chr  &quot;collector_character&quot; &quot;collector&quot;
-##   .. ..$ perc_stock: list()
-##   .. .. ..- attr(*, &quot;class&quot;)= chr  &quot;collector_double&quot; &quot;collector&quot;
-##   .. ..$ condition : list()
-##   .. .. ..- attr(*, &quot;class&quot;)= chr  &quot;collector_character&quot; &quot;collector&quot;
-##   ..$ default: list()
-##   .. ..- attr(*, &quot;class&quot;)= chr  &quot;collector_guess&quot; &quot;collector&quot;
-##   ..- attr(*, &quot;class&quot;)= chr &quot;col_spec&quot;</code></pre>
-<pre class="r"><code>d$subject &lt;- as_factor(d$subject)
-d$condition &lt;- as_factor(d$condition)</code></pre>
+<p>Make subject and condition columns factors:</p>
+<pre class="r"><code>d_tidy &lt;- d %&gt;% 
+  mutate(subject = as_factor(d$subject),
+         condition = as_factor(condition))</code></pre>
 </div>
 <div id="step-4-run-analysis" class="section level2">
 <h2>Step 4: Run analysis</h2>
 <div id="pre-processing" class="section level3">
 <h3>Pre-processing</h3>
-<p>[you can remove this section if no pre-processing is required]</p>
-<pre class="r"><code>d$perc_stock &lt;- d$perc_stock*100 #to match values that they report 
-d &lt;- subset(d,d$period &gt;= 100) #only look at periods 100-172
-
-#make summary table of means for each of the conditions
-d_avgs &lt;- d %&gt;%
+<p>Rename perc_stock as prop_stock (they are actually proportions) and create new percentage stock column</p>
+<pre class="r"><code>d_tidy &lt;- d_tidy %&gt;% 
+  mutate(prop_stock = perc_stock,
+         perc_stock = perc_stock*100)</code></pre>
+<p>Look only at ‘evaluation window’:</p>
+<pre class="r"><code>d_tidy &lt;- d_tidy %&gt;% filter(period &gt;= 100) # only look at periods 100-172</code></pre>
+<p>Participant level means for each of the conditions:</p>
+<pre class="r"><code>d_psum &lt;- d_tidy %&gt;%
   na.omit() %&gt;%
   group_by(subject,condition) %&gt;%
-  summarise(mean_perc = mean(perc_stock))
-
-#make separate data frames for each condition
-d_ShockExp &lt;- subset(d_avgs,d_avgs$condition == &quot;Shock experience&quot;)
-d_NoShockExp &lt;- subset(d_avgs,d_avgs$condition == &quot;No-shock experience&quot;)
-d_ShockDesc &lt;- subset(d_avgs,d_avgs$condition == &quot;Shock description&quot;)
-d_NoShockDesc &lt;- subset(d_avgs,d_avgs$condition == &quot;No-shock description&quot;)
-
-#combine conditions by Shock (yes/no) and type of exposure (Experience/Description)
-d_Shock &lt;- full_join(d_ShockExp,d_ShockDesc)
-d_NoShock &lt;- full_join(d_NoShockExp,d_NoShockDesc)
-d_Exp &lt;- full_join(d_ShockExp,d_NoShockExp)
-d_Desc &lt;- full_join(d_ShockDesc,d_NoShockDesc)</code></pre>
+  summarise(mean_perc = mean(perc_stock))</code></pre>
+<p>Split the condition column by shock type and exposure type:</p>
+<pre class="r"><code>d_psum &lt;- d_psum %&gt;% separate(condition, c(&quot;shockType&quot;, &quot;exposureType&quot;), sep = &quot; &quot;, remove=F) %&gt;%
+  mutate(shockType = factor(shockType),
+         exposureType = factor(exposureType))</code></pre>
 </div>
 <div id="descriptive-statistics" class="section level3">
 <h3>Descriptive statistics</h3>
-<pre class="r"><code>##### MEANS #####
-
-mean_Shock &lt;- mean(d_Shock$mean_perc) #matches value reported (29.7%)
-
-mean_NoShock &lt;- mean(d_NoShock$mean_perc) #matches value reported (32.5%)
-
-mean_ShockDesc &lt;- mean(d_ShockDesc$mean_perc)
-#matches value reported (37.1%)
-
-mean_NoShockDesc &lt;- mean(d_NoShockDesc$mean_perc)
-#matches value reported (38.1%)
-
-mean_ShockExp &lt;- mean(d_ShockExp$mean_perc) #matches value reported (22.4%)
-
-mean_NoShockExp &lt;- mean(d_NoShockExp$mean_perc) #matches value reported (26.9%)
-
-mean_ShockDesc &lt;- mean(d_ShockDesc$mean_perc)
-
-##### Difference in Means #####
-
-#1. Shock vs. No-Shock
-diff_Shock_NoShock &lt;- mean_Shock - mean_NoShock
-#matches value reported (-2.8%)
-
-#2. Shock Desc vs. No-Shock Desc
-diff_Desc &lt;- mean_ShockDesc - mean_NoShockDesc
-#matches value reported (-1%)
-
-#3. Shock Experience vs. No-Shock Experience
-diff_Exp &lt;- mean_ShockExp - mean_NoShockExp
-#matches value reported (-4.5%)
-
-#4. Shock Experience vs. Shock Description
-diff_ShockExpDesc &lt;- mean_ShockExp - mean_ShockDesc
-#matches value reported (-14.7%)</code></pre>
+<p>We’ll try to reproduce the following:</p>
+<blockquote>
+<p>Those participants took similar financial risks (shock condition; Rs = 29.7%) as did participants who were unaware of the trend (no-shock condition; Rns = 32.5%),</p>
+</blockquote>
+<pre class="r"><code>d_psum %&gt;%
+  group_by(shockType) %&gt;%
+  summarise(mean(mean_perc),
+            sd(mean_perc)) %&gt;%
+  kable(format = &quot;html&quot;, table.attr = &quot;style='width:70%; padding = 10px'&quot;)</code></pre>
+<table style="width:70%; padding = 10px">
+<thead>
+<tr>
+<th style="text-align:left;">
+shockType
+</th>
+<th style="text-align:right;">
+mean(mean_perc)
+</th>
+<th style="text-align:right;">
+sd(mean_perc)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Shock
+</td>
+<td style="text-align:right;">
+29.73367
+</td>
+<td style="text-align:right;">
+19.53418
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+No-shock
+</td>
+<td style="text-align:right;">
+32.50047
+</td>
+<td style="text-align:right;">
+22.06455
+</td>
+</tr>
+</tbody>
+</table>
+<p>Both conditions match.</p>
+<p>We’ll also try to reproduce the following:</p>
+<blockquote>
+<p>Participants who learned from description took almost identical risk in the shock (Rsd = 37.1%) and no-shock conditions (Rnsd = 38.1%)</p>
+</blockquote>
+<p>and:</p>
+<blockquote>
+<p>Participants in the shock experience condition took less risk (Rse = 22.4%) than did participants in the no-shock experience condition (Rnse = 26.9%).</p>
+</blockquote>
+<pre class="r"><code>d_psum %&gt;%
+  group_by(shockType, exposureType) %&gt;%
+  summarise(mean(mean_perc),
+            sd(mean_perc))</code></pre>
+<pre><code>## Source: local data frame [4 x 4]
+## Groups: shockType [?]
+## 
+##   shockType exposureType `mean(mean_perc)` `sd(mean_perc)`
+##      &lt;fctr&gt;       &lt;fctr&gt;             &lt;dbl&gt;           &lt;dbl&gt;
+## 1     Shock   experience          22.39061        17.11915
+## 2     Shock  description          37.07673        19.17938
+## 3  No-shock   experience          26.89902        21.83411
+## 4  No-shock  description          38.10193        21.04431</code></pre>
+<p>All conditions match.</p>
 </div>
 <div id="inferential-statistics" class="section level3">
 <h3>Inferential statistics</h3>
-<pre class="r"><code>##### CONFIDENCE INTERVALS #####
+<p>For inferential statistics we calculate the mean difference and 95% confidence intervals.</p>
+<p>First we define a function to calculate the mean difference and 95% confidence intervals as set out by the authors in Footnote 2.</p>
+<pre class="r"><code>calcCI &lt;- function(x, y) {
+ md &lt;- mean(x-y) # mean difference
+ Nx &lt;- length(x) # number of participants in x
+ Ny &lt;- length(y) # number of participants in y
+ df &lt;- Nx + Ny - 2 # define degrees of freedom
+ alpha &lt;- .05 # define alpha level
+ t &lt;- qt(1-alpha/2, df) # get critical t for 95% cis
+ sdx &lt;- sd(x)^2 # variance of x
+ sdy &lt;- sd(y)^2 # variance of y
+ sdp &lt;- sqrt( ( ((Nx - 1)*sdx) + ((Ny - 1)*sdy) ) /(Nx + Ny - 2) ) # pooled standard deviation
+ moe &lt;- t * (sdp * (sqrt( (1/Nx) + (1/Ny) ))) # margin of error
+ lower_int &lt;- md - moe # calculate lower interval
+ upper_int &lt;- md + moe # calculate upper interval
+ 
+ # create output object
+ output &lt;- list()
+ output$md &lt;- round(md, 2)
+ output$li &lt;- round(lower_int, 2)
+ output$ui &lt;- round(upper_int, 2)
+ output$report &lt;- paste0(&quot;Mean difference: &quot;, output$md, &quot; [&quot;, output$li, &quot;,&quot;, output$ui, &quot;]&quot;)
+ return(output)
+}</code></pre>
+<p>Now we’ll try to reproduce this for Shock vs. No-Shock:</p>
+<blockquote>
+<p>Rs–ns = −2.8%, 95% CI [−7.2%, 1.6%].</p>
+</blockquote>
+<pre class="r"><code>x &lt;- filter(d_psum, shockType == 'Shock')$mean_perc
+y &lt;- filter(d_psum, shockType == 'No-shock')$mean_perc
 
-#1. Shock vs. No-Shock
-df_1 &lt;- 100 + 100 - 2
-critical_t_1 &lt;- qt(.975,df_1)
+ci &lt;- calcCI(x,y)
+ci$report</code></pre>
+<pre><code>## [1] &quot;Mean difference: -2.77 [-8.58,3.04]&quot;</code></pre>
+<p>The mean difference value matches but the confidence intervals do not.</p>
+<p>The t-test function gives us the same confidence intervals as obtained by our custom function:</p>
+<pre class="r"><code>t.test(x,y)</code></pre>
+<pre><code>## 
+##  Welch Two Sample t-test
+## 
+## data:  x and y
+## t = -0.93888, df = 195.13, p-value = 0.349
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  -8.578689  3.045083
+## sample estimates:
+## mean of x mean of y 
+##  29.73367  32.50047</code></pre>
+<p>Check the severity of the discrepancy and report error type:</p>
+<pre class="r"><code>compareValues(reportedValue = -7.2, obtainedValue = ci$li)</code></pre>
+<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (-7.2) and the obtained value (-8.58) differed by 19.17%&quot;</code></pre>
+<pre class="r"><code>compareValues(reportedValue = 1.6, obtainedValue = ci$ui)</code></pre>
+<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (1.6) and the obtained value (3.04) differed by 90%&quot;</code></pre>
+<p>Now we’ll try to reproduce this for Shock Desc vs. No-Shock Desc:</p>
+<blockquote>
+<p>Rsd–nsd = −1% [−7%, 5%]</p>
+</blockquote>
+<pre class="r"><code>x &lt;- filter(d_psum, shockType == 'Shock', exposureType == 'description')$mean_perc
+y &lt;- filter(d_psum, shockType == 'No-shock', exposureType == 'description')$mean_perc
 
-s_Shock &lt;- sd(d_Shock$mean_perc)/sqrt(100)
-s_Shock_sq &lt;- s_Shock^2
-s_NoShock &lt;- sd(d_NoShock$mean_perc)/sqrt(100)
-s_NoShock_sq &lt;- s_NoShock^2
-sp_1 &lt;- sqrt(((99*s_Shock_sq) + (99*s_NoShock_sq))/df_1)
+ci &lt;- calcCI(x,y)
+ci$report</code></pre>
+<pre><code>## [1] &quot;Mean difference: -1.03 [-9.02,6.97]&quot;</code></pre>
+<p>The mean difference value matches but the confidence intervals do not.</p>
+<p>The t-test function gives us the same confidence intervals as obtained by our custom function:</p>
+<pre class="r"><code>t.test(x,y)</code></pre>
+<pre><code>## 
+##  Welch Two Sample t-test
+## 
+## data:  x and y
+## t = -0.2546, df = 97.168, p-value = 0.7996
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  -9.016885  6.966495
+## sample estimates:
+## mean of x mean of y 
+##  37.07673  38.10193</code></pre>
+<p>Check the severity of the discrepancy and report error type:</p>
+<pre class="r"><code>compareValues(reportedValue = -7, obtainedValue = ci$li)</code></pre>
+<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (-7) and the obtained value (-9.02) differed by 28.86%&quot;</code></pre>
+<pre class="r"><code>compareValues(reportedValue = 5, obtainedValue = ci$ui)</code></pre>
+<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (5) and the obtained value (6.97) differed by 39.4%&quot;</code></pre>
+<p>Now we’ll try to reproduce this for Shock Experience vs. No-Shock Experience</p>
+<blockquote>
+<p>Rse–nse = −4.5% [−11%, 1.7%]</p>
+</blockquote>
+<pre class="r"><code>x &lt;- filter(d_psum, shockType == 'Shock', exposureType == 'experience')$mean_perc
+y &lt;- filter(d_psum, shockType == 'No-shock', exposureType == 'experience')$mean_perc
 
-a_1 &lt;- sqrt((1/100)+(1/100))
+ci &lt;- calcCI(x,y)
+ci$report</code></pre>
+<pre><code>## [1] &quot;Mean difference: -4.51 [-12.29,3.28]&quot;</code></pre>
+<p>The mean difference value matches but the confidence intervals do not.</p>
+<p>The t-test function gives us the same confidence intervals as obtained by our custom function:</p>
+<pre class="r"><code>t.test(x,y)</code></pre>
+<pre><code>## 
+##  Welch Two Sample t-test
+## 
+## data:  x and y
+## t = -1.149, df = 92.722, p-value = 0.2535
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  -12.300523   3.283702
+## sample estimates:
+## mean of x mean of y 
+##  22.39061  26.89902</code></pre>
+<p>Check the severity of the discrepancy and report error type:</p>
+<pre class="r"><code>compareValues(reportedValue = -11, obtainedValue = ci$li)</code></pre>
+<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (-11) and the obtained value (-12.29) differed by 11.73%&quot;</code></pre>
+<pre class="r"><code>compareValues(reportedValue = 1.7, obtainedValue = ci$ui)</code></pre>
+<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (1.7) and the obtained value (3.28) differed by 92.94%&quot;</code></pre>
+<p>Now we’ll try to reproduce this for Shock Experience vs. Shock Description</p>
+<blockquote>
+<p>Rse–sd = −14.7% [−20%, −0.1%]</p>
+</blockquote>
+<pre class="r"><code>x &lt;- filter(d_psum, shockType == 'Shock', exposureType == 'experience')$mean_perc
+y &lt;- filter(d_psum, shockType == 'Shock', exposureType == 'description')$mean_perc
 
-interval_upper_1 &lt;- diff_Shock_NoShock + (critical_t_1*sp_1*a_1)
-compareValues(reportedValue &lt;- 1.6, obtainedValue = -2.186)</code></pre>
-<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (1.6) and the obtained value (-2.186) differed by 236.62%&quot;</code></pre>
-<pre class="r"><code>interval_lower_1 &lt;- diff_Shock_NoShock - (critical_t_1*sp_1*a_1)
-compareValues(reportedValue = -7.2, obtainedValue = -3.348)</code></pre>
-<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (-7.2) and the obtained value (-3.348) differed by 53.5%&quot;</code></pre>
-<pre class="r"><code>#2. Shock Description vs. No-Shock Description
-df_2 &lt;- 50 + 50 - 2
-critical_t_2 &lt;- qt(.975,df_2)
-
-sd_ShockDesc &lt;- sd(d_ShockDesc$mean_perc)/sqrt(50)
-sd_ShockDesc_sq &lt;- sd_ShockDesc^2
-sd_NoShockDesc &lt;- sd(d_NoShockDesc$mean_perc)/sqrt(50)
-sd_NoShockDesc_sq &lt;- sd_NoShockDesc^2
-sp_2 &lt;- sqrt(((49*sd_ShockDesc_sq) + (49*sd_NoShockDesc_sq))/df_2)
-
-a_2 &lt;- sqrt((1/50)+(1/50))
-
-interval_upper_2 &lt;- diff_Desc + (critical_t_2*sp_2*a_2)
-compareValues(reportedValue = 5, obtainedValue = .105)</code></pre>
-<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (5) and the obtained value (0.105) differed by 97.9%&quot;</code></pre>
-<pre class="r"><code>interval_lower_2 &lt;- diff_Desc - (critical_t_2*sp_2*a_2)
-compareValues(reportedValue = -7, obtainedValue = -2.155)</code></pre>
-<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (-7) and the obtained value (-2.155) differed by 69.21%&quot;</code></pre>
-<pre class="r"><code>#3. Shock Experience vs. No-Shock Experience
-df_3 &lt;- 50 + 50 - 2
-critical_t_3 &lt;- qt(.975,df_3)
-
-sd_ShockExp &lt;- sd(d_ShockExp$mean_perc)/sqrt(50)
-sd_ShockExp_sq &lt;- sd_ShockExp^2
-sd_NoShockExp &lt;- sd(d_NoShockExp$mean_perc)/sqrt(50)
-sd_NoShockExp_sq &lt;- sd_NoShockExp^2
-sp_3 &lt;- sqrt(((49*sd_ShockExp_sq) + (49*sd_NoShockExp_sq))/df_3)
-
-a_3 &lt;- sqrt((1/50)+(1/50))
-
-interval_upper_3 &lt;- diff_Exp + (critical_t_3*sp_3*a_3)
-compareValues(reportedValue = 1.7, obtainedValue = -3.407)</code></pre>
-<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (1.7) and the obtained value (-3.407) differed by 300.41%&quot;</code></pre>
-<pre class="r"><code>interval_lower_3 &lt;- diff_Exp - (critical_t_3*sp_3*a_3)
-compareValues(reportedValue = -11, obtainedValue = -5.610)</code></pre>
-<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (-11) and the obtained value (-5.61) differed by 49%&quot;</code></pre>
-<pre class="r"><code>#4. Shock Experience vs. Shock Description
-df_4 &lt;- 50 + 50 - 2
-critical_t_4 &lt;- qt(.975,df_4)
-
-sd_ShockExp &lt;- sd(d_ShockExp$mean_perc)/sqrt(50)
-sd_ShockExp_sq &lt;- sd_ShockExp^2
-sd_ShockDesc &lt;- sd(d_ShockDesc$mean_perc)/sqrt(50)
-sd_ShockDesc_sq &lt;- sd_ShockDesc^2
-
-sp_4 &lt;- sqrt(((49*sd_ShockExp_sq) + (49*sd_NoShockExp_sq))/df_4)
-
-a_4 &lt;- sqrt((1/50)+(1/50))
-
-interval_upper_4 &lt;- diff_ShockExpDesc + (critical_t_4*sp_4*a_4)
-compareValues(reportedValue = -.1, obtainedValue = -13.585)</code></pre>
-<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (-0.1) and the obtained value (-13.585) differed by 13485%&quot;</code></pre>
-<pre class="r"><code>interval_lower_4 &lt;- diff_ShockExpDesc - (critical_t_4*sp_4*a_4)
-compareValues(reportedValue = -20, obtainedValue = -15.787)</code></pre>
-<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (-20) and the obtained value (-15.787) differed by 21.06%&quot;</code></pre>
+ci &lt;- calcCI(x,y)
+ci$report</code></pre>
+<pre><code>## [1] &quot;Mean difference: -14.69 [-21.9,-7.47]&quot;</code></pre>
+<p>The mean difference value matches but the confidence intervals do not.</p>
+<p>The t-test function gives us the same confidence intervals as obtained by our custom function:</p>
+<pre class="r"><code>t.test(x,y)</code></pre>
+<pre><code>## 
+##  Welch Two Sample t-test
+## 
+## data:  x and y
+## t = -4.0394, df = 96.761, p-value = 0.0001074
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  -21.902200  -7.470055
+## sample estimates:
+## mean of x mean of y 
+##  22.39061  37.07673</code></pre>
+<p>Check the severity of the discrepancy and report error type:</p>
+<pre class="r"><code>compareValues(reportedValue = -20, obtainedValue = ci$li)</code></pre>
+<pre><code>## [1] &quot;MINOR NUMERICAL ERROR. The reported value (-20) and the obtained value (-21.9) differed by 9.5%&quot;</code></pre>
+<pre class="r"><code>compareValues(reportedValue = -0.1, obtainedValue = ci$ui)</code></pre>
+<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (-0.1) and the obtained value (-7.47) differed by 7370%&quot;</code></pre>
 </div>
 </div>
 <div id="step-5-conclusion" class="section level2">
@@ -441,8 +517,8 @@ compareValues(reportedValue = -20, obtainedValue = -15.787)</code></pre>
           Article_ID = 'TvdWP', 
           Insufficient_Information_Errors = 0,
           Decision_Errors = 0, 
-          Major_Numerical_Errors = 8, 
-          Minor_Numerical_Errors = 0)</code></pre>
+          Major_Numerical_Errors = 7, 
+          Minor_Numerical_Errors = 1)</code></pre>
 <table>
 <thead>
 <tr class="header">
@@ -457,16 +533,15 @@ compareValues(reportedValue = -20, obtainedValue = -15.787)</code></pre>
 <tr class="odd">
 <td align="right">0</td>
 <td align="right">0</td>
-<td align="right">8</td>
-<td align="right">0</td>
+<td align="right">7</td>
+<td align="right">1</td>
 <td align="left">Failure</td>
 </tr>
 </tbody>
 </table>
-<p>[Please also include a brief text summary describing your findings. If this reproducibility check was a failure, you should note any suggestions as to what you think the likely cause(s) might be.]</p>
-<p>Means and differences for each of the comparison conditions were consistent with the values that the authors reported. However, I had difficulty matching the 95% confidence intervals that were reported. I attempted to manually calculate the confidenc intervals with the formula they printed in footnote 2 on p. 368, but the confidence intervals that I obtained were much smaller than theirs. I also tried running t-tests on their comparisons of interest, but the confidence intervals given in the t-test summary were generally slightly larger than those that they reported.</p>
+<p>Means and mean differences for each of the comparison conditions were consistent with the values that the authors reported. However, we were unable to reproduce the 95% confidence intervals that were reported. We attempted to manually calculate the confidence intervals with the formula reported by the authors footnote 2 on p. 368. We also tried using the t-test function, which gave us the same values as the custom function.</p>
 <p>When I ran compareValues on a few of the comparisons, “MATCH” was printed even though the two numbers seemed to be large enough to qualify as a Major Numerical Error. In the table above, I counted those that were reported as “MATCH” as Major Numerical Errors.</p>
-<p>[This function will output information about the package versions used in this report:]</p>
+<p>Information about the package versions used in this report:</p>
 <pre class="r"><code>devtools::session_info()</code></pre>
 <pre><code>##  setting  value                       
 ##  version  R version 3.3.2 (2016-10-31)
@@ -475,7 +550,7 @@ compareValues(reportedValue = -20, obtainedValue = -15.787)</code></pre>
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Los_Angeles         
-##  date     2017-03-14                  
+##  date     2017-03-15                  
 ## 
 ##  package    * version date      
 ##  assertthat   0.1     2013-12-06

@@ -38,6 +38,12 @@ Source: CRAN
 Version: 0.12.9
 Hash: 7ab41cbe74918de8de87e435ef17e92d
 
+Package: Rmisc
+Source: CRAN
+Version: 1.5
+Hash: 6731eafd3c519c3d81508a9a3b2c2314
+Requires: plyr
+
 Package: assertthat
 Source: CRAN
 Version: 0.1
