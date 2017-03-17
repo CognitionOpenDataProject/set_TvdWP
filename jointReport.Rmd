@@ -1,0 +1,294 @@
+---
+title: "COD Reproducibility Report"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+#### Article ID: TvdWP
+#### Article doi: http://doi.org/10.1016/j.cognition.2016.10.001
+#### Pilot: Mika Asaba
+#### Co-pilot: Tom Hardwicke  
+#### Start date: 03/14/2017
+#### End date: 
+
+-------
+
+#### Methods summary: 
+
+Participants were given a hypothetical portfolio of 100 euros and were asked to distribute it between a risky option and a safe option in each monthly period (1-172). The safe option was a cash deposit account offering .25% rate of return each month. The risky option was the Spanish stock index fund which offered monthly rates of return (obtained from July 1999 to September 2013). Participants were in one of four conditions: "shock experience" (had to make investments across all 172 periods; experienced an initial decrease until period 40), "no-shock experience" (started at period 40), "shock description" (started at period 100 but viewed description of first 40 periods), and "no-shock description" (started at period 100 and did not view description of first 40 periods).
+
+#### Target outcomes: 
+
+The researchers were interested in how shock affected risk-taking behavior. The measure of risk taking **R** is defined as the **proportion of a person’s investment in the index fund (vs. the safe cash deposit)**.
+
+1. Shock (Shock experience + Shock description) vs. No-Shock (No-shock experience + No-shock description): Shock vs. No-shock groups took similar financial risks (shock condition; Rs = 29.7%) as did participants who were unaware of the trend (no-shock condition; Rns = 32.5%), Rs–ns = −2.8%, 95% CI [−7.2%, 1.6%].
+
+2. Shock description vs. No-shock description: Participants who learned from description took almost identical risk in the shock (Rsd = 37.1%) and no-shock conditions (Rnsd = 38.1%), Rsd–nsd = −1% [−7%, 5%]. 
+
+3. Shock experience vs. No-shock experience: Participants in the shock experience condition took less risk (Rse = 22.4%) than did participants in the no-shock experience condition (Rnse = 26.9%). Although this difference in the average R may not indicate a true population difference, Rse–nse = −4.5% [−11%, 1.7%], 
+
+4. Shock experience vs. Shock description: Participants who experienced the shock also took less risk than participants who learned about it from description, Rse–sd = −14.7% [−20%, −0.1%].
+
+------
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
+```
+
+## Step 1: Load packages
+
+Some useful packages are being loaded below:
+
+```{r}
+library(tidyverse) # for data munging
+library(knitr) # for kable table formating
+library(haven) # import and export 'SPSS', 'Stata' and 'SAS' Files
+library(readxl) # import excel files
+library(CODreports) # custom report functions
+library(forcats) #manipulating factors in data frames
+```
+
+## Step 2: Load data
+
+```{r}
+d <- read_tsv("data/data.txt")
+```
+
+## Step 3: Tidy data
+
+Make subject and condition columns factors:
+
+```{r}
+d_tidy <- d %>% 
+  mutate(subject = as_factor(d$subject),
+         condition = as_factor(condition))
+```
+
+## Step 4: Run analysis
+
+### Pre-processing
+
+Rename perc_stock as prop_stock (they are actually proportions) and create new percentage stock column
+
+```{r}
+d_tidy <- d_tidy %>% 
+  mutate(prop_stock = perc_stock,
+         perc_stock = perc_stock*100)
+```
+
+Look only at 'evaluation window':
+
+```{r}
+d_tidy <- d_tidy %>% filter(period >= 100) # only look at periods 100-172
+```
+
+Participant level means for each of the conditions:
+
+```{r}
+d_psum <- d_tidy %>%
+  na.omit() %>%
+  group_by(subject,condition) %>%
+  summarise(mean_perc = mean(perc_stock))
+```
+
+Split the condition column by shock type and exposure type:
+```{r}
+d_psum <- d_psum %>% separate(condition, c("shockType", "exposureType"), sep = " ", remove=F) %>%
+  mutate(shockType = factor(shockType),
+         exposureType = factor(exposureType))
+```
+
+### Descriptive statistics
+
+We'll try to reproduce the following:
+
+> Those participants took similar financial risks (shock condition; Rs = 29.7%) as did participants who were unaware of the trend (no-shock condition; Rns = 32.5%), 
+
+```{r}
+d_psum %>%
+  group_by(shockType) %>%
+  summarise(mean(mean_perc),
+            sd(mean_perc)) %>%
+  kable(format = "html", table.attr = "style='width:70%; padding = 10px'")
+```
+
+Both conditions match.
+
+We'll also try to reproduce the following:
+
+> Participants who learned from description took almost identical risk in the shock (Rsd = 37.1%) and no-shock conditions (Rnsd = 38.1%)
+
+and:
+
+> Participants in the shock experience condition took less risk (Rse = 22.4%) than did participants in the no-shock experience condition (Rnse = 26.9%). 
+
+```{r}
+d_psum %>%
+  group_by(shockType, exposureType) %>%
+  summarise(mean(mean_perc),
+            sd(mean_perc))
+```
+
+All conditions match.
+
+### Inferential statistics
+
+For inferential statistics we calculate the mean difference and 95% confidence intervals.
+
+First we define a function to calculate the mean difference and 95% confidence intervals as set out by the authors in Footnote 2.
+
+```{r}
+calcCI <- function(x, y) {
+ md <- mean(x-y) # mean difference
+ Nx <- length(x) # number of participants in x
+ Ny <- length(y) # number of participants in y
+ df <- Nx + Ny - 2 # define degrees of freedom
+ alpha <- .05 # define alpha level
+ t <- qt(1-alpha/2, df) # get critical t for 95% cis
+ sdx <- sd(x)^2 # variance of x
+ sdy <- sd(y)^2 # variance of y
+ sdp <- sqrt( ( ((Nx - 1)*sdx) + ((Ny - 1)*sdy) ) /(Nx + Ny - 2) ) # pooled standard deviation
+ moe <- t * (sdp * (sqrt( (1/Nx) + (1/Ny) ))) # margin of error
+ lower_int <- md - moe # calculate lower interval
+ upper_int <- md + moe # calculate upper interval
+ 
+ # create output object
+ output <- list()
+ output$md <- round(md, 2)
+ output$li <- round(lower_int, 2)
+ output$ui <- round(upper_int, 2)
+ output$report <- paste0("Mean difference: ", output$md, " [", output$li, ",", output$ui, "]")
+ return(output)
+}
+```
+
+Now we'll try to reproduce this for Shock vs. No-Shock:
+
+> Rs–ns = −2.8%, 95% CI [−7.2%, 1.6%].
+
+```{r}
+x <- filter(d_psum, shockType == 'Shock')$mean_perc
+y <- filter(d_psum, shockType == 'No-shock')$mean_perc
+
+ci <- calcCI(x,y)
+ci$report
+```
+
+The mean difference value matches but the confidence intervals do not.
+
+The t-test function gives us the same confidence intervals as obtained by our custom function:
+
+```{r}
+t.test(x,y)
+```
+
+Check the severity of the discrepancy and report error type:
+
+```{r}
+compareValues(reportedValue = -7.2, obtainedValue = ci$li)
+compareValues(reportedValue = 1.6, obtainedValue = ci$ui)
+```
+
+Now we'll try to reproduce this for Shock Desc vs. No-Shock Desc:
+
+> Rsd–nsd = −1% [−7%, 5%]
+
+```{r}
+x <- filter(d_psum, shockType == 'Shock', exposureType == 'description')$mean_perc
+y <- filter(d_psum, shockType == 'No-shock', exposureType == 'description')$mean_perc
+
+ci <- calcCI(x,y)
+ci$report
+```
+
+The mean difference value matches but the confidence intervals do not.
+
+The t-test function gives us the same confidence intervals as obtained by our custom function:
+
+```{r}
+t.test(x,y)
+```
+
+Check the severity of the discrepancy and report error type:
+
+```{r}
+compareValues(reportedValue = -7, obtainedValue = ci$li)
+compareValues(reportedValue = 5, obtainedValue = ci$ui)
+```
+
+Now we'll try to reproduce this for Shock Experience vs. No-Shock Experience
+
+> Rse–nse = −4.5% [−11%, 1.7%]
+
+```{r}
+x <- filter(d_psum, shockType == 'Shock', exposureType == 'experience')$mean_perc
+y <- filter(d_psum, shockType == 'No-shock', exposureType == 'experience')$mean_perc
+
+ci <- calcCI(x,y)
+ci$report
+```
+
+The mean difference value matches but the confidence intervals do not.
+
+The t-test function gives us the same confidence intervals as obtained by our custom function:
+
+```{r}
+t.test(x,y)
+```
+
+Check the severity of the discrepancy and report error type:
+
+```{r}
+compareValues(reportedValue = -11, obtainedValue = ci$li)
+compareValues(reportedValue = 1.7, obtainedValue = ci$ui)
+```
+
+Now we'll try to reproduce this for Shock Experience vs. Shock Description
+
+> Rse–sd = −14.7% [−20%, −0.1%]
+
+```{r}
+x <- filter(d_psum, shockType == 'Shock', exposureType == 'experience')$mean_perc
+y <- filter(d_psum, shockType == 'Shock', exposureType == 'description')$mean_perc
+
+ci <- calcCI(x,y)
+ci$report
+```
+
+The mean difference value matches but the confidence intervals do not.
+
+The t-test function gives us the same confidence intervals as obtained by our custom function:
+
+```{r}
+t.test(x,y)
+```
+
+Check the severity of the discrepancy and report error type:
+
+```{r}
+compareValues(reportedValue = -20, obtainedValue = ci$li)
+compareValues(reportedValue = -0.1, obtainedValue = ci$ui)
+```
+
+## Step 5: Conclusion
+
+```{r}
+codReport(Report_Type = 'joint',
+          Article_ID = 'TvdWP', 
+          Insufficient_Information_Errors = 0,
+          Decision_Errors = 0, 
+          Major_Numerical_Errors = 7, 
+          Minor_Numerical_Errors = 1)
+```
+
+Means and mean differences for each of the comparison conditions were consistent with the values that the authors reported. However, we were unable to reproduce the 95% confidence intervals that were reported. We attempted to manually calculate the confidence intervals with the formula reported by the authors footnote 2 on p. 368. We also tried using the t-test function, which gave us the same values as the custom function.
+
+When I ran compareValues on a few of the comparisons, "MATCH" was printed even though the two numbers seemed to be large enough to qualify as a Major Numerical Error. In the table above, I counted those that were reported as "MATCH" as Major Numerical Errors.
+
+Information about the package versions used in this report:
+
+```{r session_info, include=TRUE, echo=TRUE, results='markup'}
+devtools::session_info()
+```

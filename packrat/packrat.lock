@@ -1,12 +1,22 @@
 PackratFormat: 1.4
 PackratVersion: 0.4.8.1
-RVersion: 3.3.3
+RVersion: 3.3.2
 Repos: CRAN=https://cran.rstudio.com/
 
 Package: BH
 Source: CRAN
 Version: 1.62.0-1
 Hash: 14dfb3e8ffe20996118306ff4de1fab2
+
+Package: CODreports
+Source: github
+Version: 0.1
+Hash: 6e5315a0fe19fca0642712a90bbb127c
+Requires: devtools, haven, knitr, readxl, tidyverse
+GithubRepo: CODreports
+GithubUsername: CognitionOpenDataProject
+GithubRef: master
+GithubSha1: 2ed13e61fbf4040b71e2ef31f719fd57619a27c6
 
 Package: DBI
 Source: CRAN
@@ -27,6 +37,12 @@ Package: Rcpp
 Source: CRAN
 Version: 0.12.9
 Hash: 7ab41cbe74918de8de87e435ef17e92d
+
+Package: Rmisc
+Source: CRAN
+Version: 1.5
+Hash: 6731eafd3c519c3d81508a9a3b2c2314
+Requires: plyr
 
 Package: assertthat
 Source: CRAN
