@@ -224,9 +224,6 @@ div.tocify {
 <div id="pilot-mika-asaba" class="section level4">
 <h4>Pilot: Mika Asaba</h4>
 </div>
-<div id="co-pilot-tom-hardwicke" class="section level4">
-<h4>Co-pilot: Tom Hardwicke</h4>
-</div>
 <div id="start-date-03112017" class="section level4">
 <h4>Start date: 03/11/2017</h4>
 </div>
@@ -374,7 +371,7 @@ compareValues(reportedValue = 1.6, obtainedValue = -2.186)</code></pre>
 <pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (1.6) and the obtained value (-2.186) differed by 236.62%&quot;</code></pre>
 <pre class="r"><code>interval_lower_1 = diff_Shock_NoShock - (critical_t_1*sp_1*a_1)
 compareValues(reportedValue = -7.2, obtainedValue = -3.348)</code></pre>
-<pre><code>## [1] &quot;MATCH. The reported value (-7.2) and the obtained value (-3.348) differed by -53.5%&quot;</code></pre>
+<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (-7.2) and the obtained value (-3.348) differed by 53.5%&quot;</code></pre>
 <pre class="r"><code>#2. Shock Description vs. No-Shock Description
 df_2 = 50 + 50 - 2
 critical_t_2 = qt(.975,df_2)
@@ -392,7 +389,7 @@ compareValues(reportedValue = 5, obtainedValue = .105)</code></pre>
 <pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (5) and the obtained value (0.105) differed by 97.9%&quot;</code></pre>
 <pre class="r"><code>interval_lower_2 = diff_Desc - (critical_t_2*sp_2*a_2)
 compareValues(reportedValue = -7, obtainedValue = -2.155)</code></pre>
-<pre><code>## [1] &quot;MATCH. The reported value (-7) and the obtained value (-2.155) differed by -69.21%&quot;</code></pre>
+<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (-7) and the obtained value (-2.155) differed by 69.21%&quot;</code></pre>
 <pre class="r"><code>#3. Shock Experience vs. No-Shock Experience
 df_3 = 50 + 50 - 2
 critical_t_3 = qt(.975,df_3)
@@ -410,7 +407,7 @@ compareValues(reportedValue = 1.7, obtainedValue = -3.407)</code></pre>
 <pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (1.7) and the obtained value (-3.407) differed by 300.41%&quot;</code></pre>
 <pre class="r"><code>interval_lower_3 = diff_Exp - (critical_t_3*sp_3*a_3)
 compareValues(reportedValue = -11, obtainedValue = -5.610)</code></pre>
-<pre><code>## [1] &quot;MATCH. The reported value (-11) and the obtained value (-5.61) differed by -49%&quot;</code></pre>
+<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (-11) and the obtained value (-5.61) differed by 49%&quot;</code></pre>
 <pre class="r"><code>#4. Shock Experience vs. Shock Description
 df_4 = 50 + 50 - 2
 critical_t_4 = qt(.975,df_4)
@@ -426,10 +423,10 @@ a_4 = sqrt((1/50)+(1/50))
 
 interval_upper_4 = diff_ShockExpDesc + (critical_t_4*sp_4*a_4)
 compareValues(reportedValue = -.1, obtainedValue = -13.585)</code></pre>
-<pre><code>## [1] &quot;MATCH. The reported value (-0.1) and the obtained value (-13.585) differed by -13485%&quot;</code></pre>
+<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (-0.1) and the obtained value (-13.585) differed by 13485%&quot;</code></pre>
 <pre class="r"><code>interval_lower_4 = diff_ShockExpDesc - (critical_t_4*sp_4*a_4)
 compareValues(reportedValue = -20, obtainedValue = -15.787)</code></pre>
-<pre><code>## [1] &quot;MATCH. The reported value (-20) and the obtained value (-15.787) differed by -21.06%&quot;</code></pre>
+<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (-20) and the obtained value (-15.787) differed by 21.06%&quot;</code></pre>
 </div>
 </div>
 <div id="step-5-conclusion" class="section level2">
@@ -466,19 +463,19 @@ compareValues(reportedValue = -20, obtainedValue = -15.787)</code></pre>
 <p>[This function will output information about the package versions used in this report:]</p>
 <pre class="r"><code>devtools::session_info()</code></pre>
 <pre><code>##  setting  value                       
-##  version  R version 3.3.3 (2017-03-06)
+##  version  R version 3.3.2 (2016-10-31)
 ##  system   x86_64, darwin13.4.0        
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Los_Angeles         
-##  date     2017-03-13                  
+##  date     2017-03-17                  
 ## 
 ##  package    * version date      
 ##  assertthat   0.1     2013-12-06
 ##  backports    1.0.5   2017-01-18
 ##  broom        0.4.2   2017-02-13
-##  CODreports * 0.1     2017-03-13
+##  CODreports * 0.1     2017-03-17
 ##  colorspace   1.3-2   2016-12-14
 ##  DBI          0.6     2017-03-09
 ##  devtools     1.12.0  2016-06-24
@@ -504,7 +501,7 @@ compareValues(reportedValue = -20, obtainedValue = -15.787)</code></pre>
 ##  mnormt       1.5-5   2016-10-15
 ##  modelr       0.1.0   2016-08-31
 ##  munsell      0.4.3   2016-02-13
-##  nlme         3.1-131 2017-02-06
+##  nlme         3.1-128 2016-05-10
 ##  packrat      0.4.8-1 2016-09-07
 ##  plyr         1.8.4   2016-06-08
 ##  psych        1.6.12  2017-01-08
@@ -530,7 +527,7 @@ compareValues(reportedValue = -20, obtainedValue = -15.787)</code></pre>
 ##  CRAN (R 3.3.0)                                      
 ##  CRAN (R 3.3.2)                                      
 ##  CRAN (R 3.3.2)                                      
-##  Github (CognitionOpenDataProject/CODreports@e90fdef)
+##  Github (CognitionOpenDataProject/CODreports@2ed13e6)
 ##  CRAN (R 3.3.2)                                      
 ##  CRAN (R 3.3.2)                                      
 ##  CRAN (R 3.3.0)                                      
@@ -538,7 +535,7 @@ compareValues(reportedValue = -20, obtainedValue = -15.787)</code></pre>
 ##  CRAN (R 3.3.0)                                      
 ##  CRAN (R 3.3.0)                                      
 ##  CRAN (R 3.3.2)                                      
-##  CRAN (R 3.3.3)                                      
+##  CRAN (R 3.3.2)                                      
 ##  CRAN (R 3.3.2)                                      
 ##  CRAN (R 3.3.0)                                      
 ##  CRAN (R 3.3.0)                                      
@@ -547,8 +544,8 @@ compareValues(reportedValue = -20, obtainedValue = -15.787)</code></pre>
 ##  CRAN (R 3.3.0)                                      
 ##  CRAN (R 3.3.0)                                      
 ##  CRAN (R 3.3.2)                                      
-##  CRAN (R 3.3.3)                                      
-##  CRAN (R 3.3.3)                                      
+##  CRAN (R 3.3.2)                                      
+##  CRAN (R 3.3.2)                                      
 ##  CRAN (R 3.3.0)                                      
 ##  CRAN (R 3.3.0)                                      
 ##  CRAN (R 3.3.0)                                      
@@ -556,8 +553,8 @@ compareValues(reportedValue = -20, obtainedValue = -15.787)</code></pre>
 ##  CRAN (R 3.3.0)                                      
 ##  CRAN (R 3.3.0)                                      
 ##  CRAN (R 3.3.0)                                      
-##  CRAN (R 3.3.3)                                      
-##  CRAN (R 3.3.0)                                      
+##  CRAN (R 3.3.2)                                      
+##  CRAN (R 3.3.2)                                      
 ##  CRAN (R 3.3.0)                                      
 ##  CRAN (R 3.3.2)                                      
 ##  CRAN (R 3.3.0)                                      
@@ -566,7 +563,7 @@ compareValues(reportedValue = -20, obtainedValue = -15.787)</code></pre>
 ##  CRAN (R 3.3.0)                                      
 ##  CRAN (R 3.3.0)                                      
 ##  CRAN (R 3.3.0)                                      
-##  CRAN (R 3.3.3)                                      
+##  CRAN (R 3.3.2)                                      
 ##  CRAN (R 3.3.2)                                      
 ##  CRAN (R 3.3.0)                                      
 ##  CRAN (R 3.3.2)                                      

@@ -8,7 +8,6 @@ output:
 
 #### Article ID: TvdWP
 #### Pilot: Mika Asaba
-#### Co-pilot: Tom Hardwicke  
 #### Start date: 03/11/2017
 #### End date: 03/13/2017
 
