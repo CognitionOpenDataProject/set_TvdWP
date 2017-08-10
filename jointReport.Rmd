@@ -10,13 +10,14 @@ output:
 #### Pilot: Mika Asaba
 #### Co-pilot: Bria Long
 #### Start date: 03/11/2017
-#### End date: 03/13/2017
+#### End date: 03/13/2017 ## Co-pilot started 08/10/2017
 
 -------
 
 #### Methods summary: 
 
 Pariticpants were given a hypothetical portfolio of 100 euros and were asked to distribute it between a risky option and a safe option in each monthly period (1-172). The safe option was a cash deposit account offering .25% rate of return each month. The risky option was the Spanish stock index fund which offerred monthly rates of return (obtained from July 1999 to September 2013). Participants were in one of four conditions: "shock experience" (had to make investments across all 172 periods; experienced an initial decrease until period 40), "no-shock experience" (started at period 40), "shock description" (started at period 100 but viewed description of first 40 periods), and "no-shock description" (started at period 100 and did not view description of first 40 periods).
+
 
 #### Target outcomes: 
 
@@ -99,39 +100,49 @@ d_Desc = full_join(d_ShockDesc,d_NoShockDesc)
 ```{r}
 ##### MEANS #####
 
-mean_Shock = mean(d_Shock$mean_perc) #matches value reported (29.7%)
+# Mean of shock condition, collapsed across exposure type
+mean_Shock = mean(d_Shock$mean_perc) 
+compareValues(reportedValue = 29.7, obtainedValue = mean_Shock) 
 
-mean_NoShock = mean(d_NoShock$mean_perc) #matches value reported (32.5%)
+# Mean of no shock condition, collapsed across exposure type
+mean_NoShock = mean(d_NoShock$mean_perc) 
+compareValues(reportedValue = 32.5, obtainedValue = mean_NoShock)
 
-mean_ShockDesc = mean(d_ShockDesc$mean_perc)
-#matches value reported (37.1%)
+# Mean of shock-description condition
+mean_ShockDesc = mean(d_ShockDesc$mean_perc) 
+compareValues(reportedValue = 37.1, obtainedValue = mean_ShockDesc)
 
-mean_NoShockDesc = mean(d_NoShockDesc$mean_perc)
-#matches value reported (38.1%)
+# Mean of no-shock description condition
+mean_NoShockDesc = mean(d_NoShockDesc$mean_perc) 
+compareValues(reportedValue = 38.1, obtainedValue = mean_NoShockDesc)
 
-mean_ShockExp = mean(d_ShockExp$mean_perc) #matches value reported (22.4%)
+# Mean of shock experience condition
+mean_ShockExp = mean(d_ShockExp$mean_perc)
+compareValues(reportedValue = 22.4, obtainedValue = mean_ShockExp)
 
-mean_NoShockExp = mean(d_NoShockExp$mean_perc) #matches value reported (26.9%)
+# Mean of no shock experience condition
+mean_NoShockExp = mean(d_NoShockExp$mean_perc) 
+compareValues(reportedValue = 26.9, obtainedValue = mean_NoShockExp)
 
-mean_ShockDesc = mean(d_ShockDesc$mean_perc)
 
 ##### Difference in Means #####
 
 #1. Shock vs. No-Shock
 diff_Shock_NoShock = mean_Shock - mean_NoShock
-#matches value reported (-2.8%)
+compareValues(reportedValue = -2.8, obtainedValue = diff_Shock_NoShock)
 
 #2. Shock Desc vs. No-Shock Desc
 diff_Desc = mean_ShockDesc - mean_NoShockDesc
-#matches value reported (-1%)
+compareValues(reportedValue = -1, obtainedValue = diff_Desc)
 
 #3. Shock Experience vs. No-Shock Experience
 diff_Exp = mean_ShockExp - mean_NoShockExp
-#matches value reported (-4.5%)
+compareValues(reportedValue = -4.5, obtainedValue = diff_Exp)
 
 #4. Shock Experience vs. Shock Description
 diff_ShockExpDesc = mean_ShockExp - mean_ShockDesc
-#matches value reported (-14.7%)
+compareValues(reportedValue = -14.7, obtainedValue = diff_ShockExpDesc)
+
 ```
 
 ### Inferential statistics
@@ -139,17 +150,23 @@ diff_ShockExpDesc = mean_ShockExp - mean_ShockDesc
 ```{r}
 ##### CONFIDENCE INTERVALS #####
 
-#1. Shock vs. No-Shock
-df_1 = 100 + 100 - 2
-critical_t_1 = qt(.975,df_1)
+![Screenshot of footnote 2 where this formula is detailed.](confidenceIntervalFormula.png)
 
+#1. Shock vs. No-Shock
+# get degrees of freedom (# of participants 1st group + # of participants 2nd group - 2)
+df_1 = 100 + 100 - 2 
+
+# get critical t-value using this df
+critical_t_1 = qt(.975,df_1) # .975 = 1 - alpha (.05)/2
+
+# get pooled estimate of within-subjects standard deviation for these two groups
 s_Shock = sd(d_Shock$mean_perc)/sqrt(100)
 s_Shock_sq = s_Shock^2
 s_NoShock = sd(d_NoShock$mean_perc)/sqrt(100)
 s_NoShock_sq = s_NoShock^2
-sp_1 = sqrt(((99*s_Shock_sq) + (99*s_NoShock_sq))/df_1)
 
-a_1 = sqrt((1/100)+(1/100))
+sp_1 = sqrt(((99*s_Shock_sq) + (99*s_NoShock_sq))/df_1) # pooled sd 
+a_1 = sqrt((1/100)+(1/100)) # next argument
 
 interval_upper_1 = diff_Shock_NoShock + (critical_t_1*sp_1*a_1)
 compareValues(reportedValue = 1.6, obtainedValue = -2.186)
