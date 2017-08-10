@@ -293,8 +293,7 @@ d$condition = as_factor(d$condition)</code></pre>
 <h2>Step 4: Run analysis</h2>
 <div id="pre-processing" class="section level3">
 <h3>Pre-processing</h3>
-<pre class="r"><code>d$perc_stock = d$perc_stock #to match values that they report 
-d = subset(d,d$period &gt;= 100) #only look at periods 100-172
+<pre class="r"><code>d = subset(d,d$period &gt;= 100) #only look at periods 100-172
 
 #make summary table of means for each of the conditions
 d_avgs = d %&gt;%
@@ -523,9 +522,7 @@ compareValues(reportedValue = -.1, obtainedValue = interval_upper_4*100)</code><
 </tr>
 </tbody>
 </table>
-<p>[Please also include a brief text summary describing your findings. If this reproducibility check was a failure, you should note any suggestions as to what you think the likely cause(s) might be.]</p>
-<p>Means and differences for each of the comparison conditions were consistent with the values that the authors reported. However, I had difficulty matching the 95% confidence intervals that were reported. I attempted to manually calculate the confidenc intervals with the formula they printed in footnote 2 on p. 368, but the confidence intervals that I obtained were much smaller than theirs. I also tried running t-tests on their comparisons of interest, but the confidence intervals given in the t-test summary were generally slightly larger than those that they reported.</p>
-<p>When I ran compareValues on a few of the comparisons, “MATCH” was printed even though the two numbers seemed to be large enough to qualify as a Major Numerical Error. In the table above, I counted those that were reported as “MATCH” as Major Numerical Errors.</p>
+<p>Means and differences for each of the comparison conditions were consistent with the values that the authors reported. However, we had difficulty matching the 95% confidence intervals that were reported. We attempted to manually calculate the confidenc intervals with the formula they printed in footnote 2 on p. 368, but the confidence intervals that I obtained did not match theirs. However, they did match the values we obtained when we ran t-tests on their comparisons of interest (with slight rounding errors).</p>
 <p>[This function will output information about the package versions used in this report:]</p>
 <pre class="r"><code>devtools::session_info()</code></pre>
 <pre><code>##  setting  value                       

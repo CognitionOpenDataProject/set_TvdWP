@@ -70,9 +70,7 @@ d$condition = as_factor(d$condition)
 ## Step 4: Run analysis
 
 ### Pre-processing
-
 ```{r}
-d$perc_stock = d$perc_stock #to match values that they report 
 d = subset(d,d$period >= 100) #only look at periods 100-172
 
 #make summary table of means for each of the conditions
