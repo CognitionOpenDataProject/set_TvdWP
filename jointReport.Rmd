@@ -71,10 +71,8 @@ d$condition = as_factor(d$condition)
 
 ### Pre-processing
 
-[you can remove this section if no pre-processing is required]
-
 ```{r}
-d$perc_stock = d$perc_stock*100 #to match values that they report 
+d$perc_stock = d$perc_stock #to match values that they report 
 d = subset(d,d$period >= 100) #only look at periods 100-172
 
 #make summary table of means for each of the conditions
@@ -102,46 +100,46 @@ d_Desc = full_join(d_ShockDesc,d_NoShockDesc)
 
 # Mean of shock condition, collapsed across exposure type
 mean_Shock = mean(d_Shock$mean_perc) 
-compareValues(reportedValue = 29.7, obtainedValue = mean_Shock) 
+compareValues(reportedValue = 29.7, obtainedValue = mean_Shock*100) 
 
 # Mean of no shock condition, collapsed across exposure type
 mean_NoShock = mean(d_NoShock$mean_perc) 
-compareValues(reportedValue = 32.5, obtainedValue = mean_NoShock)
+compareValues(reportedValue = 32.5, obtainedValue = mean_NoShock*100)
 
 # Mean of shock-description condition
 mean_ShockDesc = mean(d_ShockDesc$mean_perc) 
-compareValues(reportedValue = 37.1, obtainedValue = mean_ShockDesc)
+compareValues(reportedValue = 37.1, obtainedValue = mean_ShockDesc*100)
 
 # Mean of no-shock description condition
 mean_NoShockDesc = mean(d_NoShockDesc$mean_perc) 
-compareValues(reportedValue = 38.1, obtainedValue = mean_NoShockDesc)
+compareValues(reportedValue = 38.1, obtainedValue = mean_NoShockDesc*100)
 
 # Mean of shock experience condition
 mean_ShockExp = mean(d_ShockExp$mean_perc)
-compareValues(reportedValue = 22.4, obtainedValue = mean_ShockExp)
+compareValues(reportedValue = 22.4, obtainedValue = mean_ShockExp*100)
 
 # Mean of no shock experience condition
 mean_NoShockExp = mean(d_NoShockExp$mean_perc) 
-compareValues(reportedValue = 26.9, obtainedValue = mean_NoShockExp)
+compareValues(reportedValue = 26.9, obtainedValue = mean_NoShockExp*100)
 
 
 ##### Difference in Means #####
 
 #1. Shock vs. No-Shock
 diff_Shock_NoShock = mean_Shock - mean_NoShock
-compareValues(reportedValue = -2.8, obtainedValue = diff_Shock_NoShock)
+compareValues(reportedValue = -2.8, obtainedValue = diff_Shock_NoShock*100)
 
 #2. Shock Desc vs. No-Shock Desc
 diff_Desc = mean_ShockDesc - mean_NoShockDesc
-compareValues(reportedValue = -1, obtainedValue = diff_Desc)
+compareValues(reportedValue = -1, obtainedValue = diff_Desc*100)
 
 #3. Shock Experience vs. No-Shock Experience
 diff_Exp = mean_ShockExp - mean_NoShockExp
-compareValues(reportedValue = -4.5, obtainedValue = diff_Exp)
+compareValues(reportedValue = -4.5, obtainedValue = diff_Exp*100)
 
 #4. Shock Experience vs. Shock Description
 diff_ShockExpDesc = mean_ShockExp - mean_ShockDesc
-compareValues(reportedValue = -14.7, obtainedValue = diff_ShockExpDesc)
+compareValues(reportedValue = -14.7, obtainedValue = diff_ShockExpDesc*100)
 
 ```
 
@@ -150,84 +148,125 @@ compareValues(reportedValue = -14.7, obtainedValue = diff_ShockExpDesc)
 ```{r}
 ##### CONFIDENCE INTERVALS #####
 
-![Screenshot of footnote 2 where this formula is detailed.](confidenceIntervalFormula.png)
-
 #1. Shock vs. No-Shock
-# get degrees of freedom (# of participants 1st group + # of participants 2nd group - 2)
+# get df (# of participants 1st group + # of participants 2nd group - 2)
 df_1 = 100 + 100 - 2 
 
 # get critical t-value using this df
-critical_t_1 = qt(.975,df_1) # .975 = 1 - alpha (.05)/2
+critical_t_1 = qt(.975,df_1) # .975 = 1 - (.05/2)
 
 # get pooled estimate of within-subjects standard deviation for these two groups
-s_Shock = sd(d_Shock$mean_perc)/sqrt(100)
+s_Shock = sd(d_Shock$mean_perc) 
 s_Shock_sq = s_Shock^2
-s_NoShock = sd(d_NoShock$mean_perc)/sqrt(100)
+s_NoShock = sd(d_NoShock$mean_perc)
 s_NoShock_sq = s_NoShock^2
-
 sp_1 = sqrt(((99*s_Shock_sq) + (99*s_NoShock_sq))/df_1) # pooled sd 
-a_1 = sqrt((1/100)+(1/100)) # next argument
 
+# next term in formula
+a_1 = sqrt((1/100)+(1/100)) 
+
+# calculate upper and lower bounds of 95% CI
 interval_upper_1 = diff_Shock_NoShock + (critical_t_1*sp_1*a_1)
-compareValues(reportedValue = 1.6, obtainedValue = -2.186)
-
 interval_lower_1 = diff_Shock_NoShock - (critical_t_1*sp_1*a_1)
-compareValues(reportedValue = -7.2, obtainedValue = -3.348)
+
+# our calculations match confidence intervals from t-test output 
+ttest_ShockvNoShock=t.test(d_Shock$mean_perc,d_NoShock$mean_perc, paired = FALSE, var.equal = FALSE)
+compareValues(interval_lower_1,ttest_ShockvNoShock$conf.int[1])
+compareValues(interval_upper_1,ttest_ShockvNoShock$conf.int[2])
+
+# compare reported values to our calcuations
+compareValues(reportedValue = 1.6, obtainedValue = interval_upper_1*100)
+compareValues(reportedValue = -7.2, obtainedValue = interval_lower_1*100)
 
 #2. Shock Description vs. No-Shock Description
+# get df (# of participants 1st group + # of participants 2nd group - 2)
 df_2 = 50 + 50 - 2
+
+# get critical t-value using this df
 critical_t_2 = qt(.975,df_2)
 
-sd_ShockDesc = sd(d_ShockDesc$mean_perc)/sqrt(50)
+# get pooled estimate of within-subjects standard deviation for these two groups
+sd_ShockDesc = sd(d_ShockDesc$mean_perc)
 sd_ShockDesc_sq = sd_ShockDesc^2
-sd_NoShockDesc = sd(d_NoShockDesc$mean_perc)/sqrt(50)
+sd_NoShockDesc = sd(d_NoShockDesc$mean_perc)
 sd_NoShockDesc_sq = sd_NoShockDesc^2
 sp_2 = sqrt(((49*sd_ShockDesc_sq) + (49*sd_NoShockDesc_sq))/df_2)
 
+# next term in formula
 a_2 = sqrt((1/50)+(1/50))
 
+# calculate upper and lower bounds of 95% CI
 interval_upper_2 = diff_Desc + (critical_t_2*sp_2*a_2)
-compareValues(reportedValue = 5, obtainedValue = .105)
-
 interval_lower_2 = diff_Desc - (critical_t_2*sp_2*a_2)
-compareValues(reportedValue = -7, obtainedValue = -2.155)
+
+# our calculations match confidence intervals from t-test output 
+ttest_ShockvNoShockDesc=t.test(d_ShockDesc$mean_perc,d_NoShockDesc$mean_perc, paired = FALSE, var.equal = FALSE)
+compareValues(interval_upper_2,ttest_ShockvNoShockDesc$conf.int[2])
+compareValues(interval_lower_2,ttest_ShockvNoShockDesc$conf.int[1])
+
+# compare reported values to our calcuations
+compareValues(reportedValue = 5, obtainedValue = interval_upper_2*100)
+compareValues(reportedValue = -7, obtainedValue = interval_lower_2*100)
 
 #3. Shock Experience vs. No-Shock Experience
+# get df (# of participants 1st group + # of participants 2nd group - 2)
 df_3 = 50 + 50 - 2
+
+# get critical t-value using this df
 critical_t_3 = qt(.975,df_3)
 
-sd_ShockExp = sd(d_ShockExp$mean_perc)/sqrt(50)
+# calculate pooled variance
+sd_ShockExp = sd(d_ShockExp$mean_perc)
 sd_ShockExp_sq = sd_ShockExp^2
-sd_NoShockExp = sd(d_NoShockExp$mean_perc)/sqrt(50)
+sd_NoShockExp = sd(d_NoShockExp$mean_perc)
 sd_NoShockExp_sq = sd_NoShockExp^2
 sp_3 = sqrt(((49*sd_ShockExp_sq) + (49*sd_NoShockExp_sq))/df_3)
 
+# next term in formula
 a_3 = sqrt((1/50)+(1/50))
 
+# calculate upper and lower bounds of 95% CI
 interval_upper_3 = diff_Exp + (critical_t_3*sp_3*a_3)
-compareValues(reportedValue = 1.7, obtainedValue = -3.407)
-
 interval_lower_3 = diff_Exp - (critical_t_3*sp_3*a_3)
-compareValues(reportedValue = -11, obtainedValue = -5.610)
+
+# our calculations match confidence intervals from t-test output 
+ttest_ShockvNoShockExp=t.test(d_ShockExp$mean_perc,d_NoShockExp$mean_perc, paired = FALSE, var.equal = FALSE)
+compareValues(interval_lower_3,ttest_ShockvNoShockExp$conf.int[1])
+compareValues(interval_upper_3,ttest_ShockvNoShockExp$conf.int[2])
+
+# compare reported values to our calcuations
+compareValues(reportedValue = -11, obtainedValue = interval_lower_3*100)
+compareValues(reportedValue = 1.7, obtainedValue = interval_upper_3*100)
 
 #4. Shock Experience vs. Shock Description
+# get df (# of participants 1st group + # of participants 2nd group - 2)
 df_4 = 50 + 50 - 2
+
+# get critical t-value using this df
 critical_t_4 = qt(.975,df_4)
 
-sd_ShockExp = sd(d_ShockExp$mean_perc)/sqrt(50)
+# calculate pooled variance
+sd_ShockExp = sd(d_ShockExp$mean_perc)
 sd_ShockExp_sq = sd_ShockExp^2
-sd_ShockDesc = sd(d_ShockDesc$mean_perc)/sqrt(50)
+sd_ShockDesc = sd(d_ShockDesc$mean_perc)
 sd_ShockDesc_sq = sd_ShockDesc^2
-
 sp_4 = sqrt(((49*sd_ShockExp_sq) + (49*sd_NoShockExp_sq))/df_4)
 
+# next term in formula
 a_4 = sqrt((1/50)+(1/50))
 
-interval_upper_4 = diff_ShockExpDesc + (critical_t_4*sp_4*a_4)
-compareValues(reportedValue = -.1, obtainedValue = -13.585)
-
+# calculate upper and lower bounds of 95% CI
 interval_lower_4 = diff_ShockExpDesc - (critical_t_4*sp_4*a_4)
-compareValues(reportedValue = -20, obtainedValue = -15.787)
+interval_upper_4 = diff_ShockExpDesc + (critical_t_4*sp_4*a_4)
+
+# our calculations match confidence intervals from t-test output 
+ttest_ShockExpvShockDesc=t.test(d_ShockExp$mean_perc,d_ShockDesc$mean_perc, paired = FALSE, var.equal = FALSE)
+compareValues(interval_lower_4,ttest_ShockExpvShockDesc$conf.int[1])
+compareValues(interval_upper_4,ttest_ShockExpvShockDesc$conf.int[2])
+
+# compare reported values to our calcuations
+compareValues(reportedValue = -.1, obtainedValue = interval_upper_4*100)
+compareValues(reportedValue = -20, obtainedValue = interval_lower_4*100)
 ```
 
 ## Step 5: Conclusion
@@ -241,11 +280,9 @@ codReport(Report_Type = 'pilot',
           Minor_Numerical_Errors = 0)
 ```
 
-[Please also include a brief text summary describing your findings. If this reproducibility check was a failure, you should note any suggestions as to what you think the likely cause(s) might be.]
 
-Means and differences for each of the comparison conditions were consistent with the values that the authors reported. However, I had difficulty matching the 95% confidence intervals that were reported. I attempted to manually calculate the confidenc intervals with the formula they printed in footnote 2 on p. 368, but the confidence intervals that I obtained were much smaller than theirs. I also tried running t-tests on their comparisons of interest, but the confidence intervals given in the t-test summary were generally slightly larger than those that they reported. 
+Means and differences for each of the comparison conditions were consistent with the values that the authors reported. However, we had difficulty matching the 95% confidence intervals that were reported. We attempted to manually calculate the confidenc intervals with the formula they printed in footnote 2 on p. 368, but the confidence intervals that I obtained did not match theirs. However, they did match the values we obtained when we ran t-tests on their comparisons of interest (with slight rounding errors).
 
-When I ran compareValues on a few of the comparisons, "MATCH" was printed even though the two numbers seemed to be large enough to qualify as a Major Numerical Error. In the table above, I counted those that were reported as "MATCH" as Major Numerical Errors.
 
 [This function will output information about the package versions used in this report:]
 
