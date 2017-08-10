@@ -279,10 +279,9 @@ codReport(Report_Type = 'pilot',
 ```
 
 
-Means and differences for each of the comparison conditions were consistent with the values that the authors reported. However, we had difficulty matching the 95% confidence intervals that were reported. We attempted to manually calculate the confidenc intervals with the formula they printed in footnote 2 on p. 368, but the confidence intervals that I obtained did not match theirs. However, they did match the values we obtained when we ran t-tests on their comparisons of interest (with slight rounding errors).
+Means and differences for each of the comparison conditions were consistent with the values that the authors reported. However, we had difficulty matching the 95% confidence intervals that were reported. We attempted to manually calculate the confidence intervals with the formula they printed in footnote 2 on p. 368, but the confidence intervals that we obtained did not match theirs. However, they did match values we obtained when we ran t-tests on their comparisons of interest (with slight rounding errors).
 
 
-[This function will output information about the package versions used in this report:]
 
 ```{r session_info, include=TRUE, echo=TRUE, results='markup'}
 devtools::session_info()
