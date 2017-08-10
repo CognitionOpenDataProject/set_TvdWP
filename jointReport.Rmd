@@ -10,7 +10,7 @@ output:
 #### Pilot: Mika Asaba
 #### Co-pilot: Bria Long
 #### Start date: 03/11/2017
-#### End date: 03/13/2017 ## Co-pilot started 08/10/2017
+#### End date: 
 
 -------
 
@@ -169,12 +169,13 @@ interval_lower_1 = diff_Shock_NoShock - (critical_t_1*sp_1*a_1)
 
 # our calculations match confidence intervals from t-test output 
 ttest_ShockvNoShock=t.test(d_Shock$mean_perc,d_NoShock$mean_perc, paired = FALSE, var.equal = FALSE)
+# rounding errors here, don't match exactly but pretty close.
 #compareValues(interval_lower_1,ttest_ShockvNoShock$conf.int[1])
 #compareValues(interval_upper_1,ttest_ShockvNoShock$conf.int[2])
 
 # compare reported values to our calcuations
-compareValues(reportedValue = 1.6, obtainedValue = interval_upper_1*100)
 compareValues(reportedValue = -7.2, obtainedValue = interval_lower_1*100)
+compareValues(reportedValue = 1.6, obtainedValue = interval_upper_1*100)
 
 #2. Shock Description vs. No-Shock Description
 # get df (# of participants 1st group + # of participants 2nd group - 2)
@@ -199,12 +200,13 @@ interval_lower_2 = diff_Desc - (critical_t_2*sp_2*a_2)
 
 # our calculations match confidence intervals from t-test output 
 ttest_ShockvNoShockDesc=t.test(d_ShockDesc$mean_perc,d_NoShockDesc$mean_perc, paired = FALSE, var.equal = FALSE)
-#compareValues(interval_upper_2,ttest_ShockvNoShockDesc$conf.int[2])
+# rounding errors here, don't match exactly but pretty close.
 #compareValues(interval_lower_2,ttest_ShockvNoShockDesc$conf.int[1])
+#compareValues(interval_upper_2,ttest_ShockvNoShockDesc$conf.int[2])
 
 # compare reported values to our calcuations
-compareValues(reportedValue = 5, obtainedValue = interval_upper_2*100)
 compareValues(reportedValue = -7, obtainedValue = interval_lower_2*100)
+compareValues(reportedValue = 5, obtainedValue = interval_upper_2*100)
 
 #3. Shock Experience vs. No-Shock Experience
 # get df (# of participants 1st group + # of participants 2nd group - 2)
@@ -229,6 +231,7 @@ interval_lower_3 = diff_Exp - (critical_t_3*sp_3*a_3)
 
 # our calculations match confidence intervals from t-test output 
 ttest_ShockvNoShockExp=t.test(d_ShockExp$mean_perc,d_NoShockExp$mean_perc, paired = FALSE, var.equal = FALSE)
+# rounding errors here, don't match exactly but pretty close.
 #compareValues(interval_lower_3,ttest_ShockvNoShockExp$conf.int[1])
 #compareValues(interval_upper_3,ttest_ShockvNoShockExp$conf.int[2])
 
@@ -259,12 +262,13 @@ interval_upper_4 = diff_ShockExpDesc + (critical_t_4*sp_4*a_4)
 
 # our calculations match confidence intervals from t-test output 
 ttest_ShockExpvShockDesc=t.test(d_ShockExp$mean_perc,d_ShockDesc$mean_perc, paired = FALSE, var.equal = FALSE)
+# rounding errors here, don't match exactly but pretty close.
 #compareValues(interval_lower_4,ttest_ShockExpvShockDesc$conf.int[1])
 #compareValues(interval_upper_4,ttest_ShockExpvShockDesc$conf.int[2])
 
 # compare reported values to our calcuations
-compareValues(reportedValue = -.1, obtainedValue = interval_upper_4*100)
 compareValues(reportedValue = -20, obtainedValue = interval_lower_4*100)
+compareValues(reportedValue = -.1, obtainedValue = interval_upper_4*100)
 ```
 
 ## Step 5: Conclusion
