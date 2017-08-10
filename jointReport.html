@@ -387,11 +387,10 @@ interval_lower_1 = diff_Shock_NoShock - (critical_t_1*sp_1*a_1)
 
 # our calculations match confidence intervals from t-test output 
 ttest_ShockvNoShock=t.test(d_Shock$mean_perc,d_NoShock$mean_perc, paired = FALSE, var.equal = FALSE)
-compareValues(interval_lower_1,ttest_ShockvNoShock$conf.int[1])</code></pre>
-<pre><code>## [1] &quot;MINOR NUMERICAL ERROR. The reported value (-0.0857816353249401) and the obtained value (-0.0857868856915856) differed by 0.01%. NB obtained value was rounded to 16 decimal places.&quot;</code></pre>
-<pre class="r"><code>compareValues(interval_upper_1,ttest_ShockvNoShock$conf.int[2])</code></pre>
-<pre><code>## [1] &quot;MINOR NUMERICAL ERROR. The reported value (0.0304455834584636) and the obtained value (0.0304508338251091) differed by 0.02%. NB obtained value was rounded to 16 decimal places.&quot;</code></pre>
-<pre class="r"><code># compare reported values to our calcuations
+#compareValues(interval_lower_1,ttest_ShockvNoShock$conf.int[1])
+#compareValues(interval_upper_1,ttest_ShockvNoShock$conf.int[2])
+
+# compare reported values to our calcuations
 compareValues(reportedValue = 1.6, obtainedValue = interval_upper_1*100)</code></pre>
 <pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (1.6) and the obtained value (3) differed by 87.5%. NB obtained value was rounded to 1 decimal places.&quot;</code></pre>
 <pre class="r"><code>compareValues(reportedValue = -7.2, obtainedValue = interval_lower_1*100)</code></pre>
@@ -419,11 +418,10 @@ interval_lower_2 = diff_Desc - (critical_t_2*sp_2*a_2)
 
 # our calculations match confidence intervals from t-test output 
 ttest_ShockvNoShockDesc=t.test(d_ShockDesc$mean_perc,d_NoShockDesc$mean_perc, paired = FALSE, var.equal = FALSE)
-compareValues(interval_upper_2,ttest_ShockvNoShockDesc$conf.int[2])</code></pre>
-<pre><code>## [1] &quot;MINOR NUMERICAL ERROR. The reported value (0.069656401140615) and the obtained value (0.069664952785412) differed by 0.01%. NB obtained value was rounded to 15 decimal places.&quot;</code></pre>
-<pre class="r"><code>compareValues(interval_lower_2,ttest_ShockvNoShockDesc$conf.int[1])</code></pre>
-<pre><code>## [1] &quot;MINOR NUMERICAL ERROR. The reported value (-0.0901602956505681) and the obtained value (-0.0901688472953656) differed by 0.01%. NB obtained value was rounded to 16 decimal places.&quot;</code></pre>
-<pre class="r"><code># compare reported values to our calcuations
+#compareValues(interval_upper_2,ttest_ShockvNoShockDesc$conf.int[2])
+#compareValues(interval_lower_2,ttest_ShockvNoShockDesc$conf.int[1])
+
+# compare reported values to our calcuations
 compareValues(reportedValue = 5, obtainedValue = interval_upper_2*100)</code></pre>
 <pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (5) and the obtained value (7) differed by 40%. NB obtained value was rounded to 0 decimal places.&quot;</code></pre>
 <pre class="r"><code>compareValues(reportedValue = -7, obtainedValue = interval_lower_2*100)</code></pre>
@@ -451,11 +449,10 @@ interval_lower_3 = diff_Exp - (critical_t_3*sp_3*a_3)
 
 # our calculations match confidence intervals from t-test output 
 ttest_ShockvNoShockExp=t.test(d_ShockExp$mean_perc,d_NoShockExp$mean_perc, paired = FALSE, var.equal = FALSE)
-compareValues(interval_lower_3,ttest_ShockvNoShockExp$conf.int[1])</code></pre>
-<pre><code>## [1] &quot;MINOR NUMERICAL ERROR. The reported value (-0.122949795418111) and the obtained value (-0.12300523259599) differed by 0.05%. NB obtained value was rounded to 15 decimal places.&quot;</code></pre>
-<pre class="r"><code>compareValues(interval_upper_3,ttest_ShockvNoShockExp$conf.int[2])</code></pre>
-<pre><code>## [1] &quot;MINOR NUMERICAL ERROR. The reported value (0.0327815861951111) and the obtained value (0.0328370233729899) differed by 0.17%. NB obtained value was rounded to 16 decimal places.&quot;</code></pre>
-<pre class="r"><code># compare reported values to our calcuations
+#compareValues(interval_lower_3,ttest_ShockvNoShockExp$conf.int[1])
+#compareValues(interval_upper_3,ttest_ShockvNoShockExp$conf.int[2])
+
+# compare reported values to our calcuations
 compareValues(reportedValue = -11, obtainedValue = interval_lower_3*100)</code></pre>
 <pre><code>## [1] &quot;MINOR NUMERICAL ERROR. The reported value (-11) and the obtained value (-12) differed by 9.09%. NB obtained value was rounded to 0 decimal places.&quot;</code></pre>
 <pre class="r"><code>compareValues(reportedValue = 1.7, obtainedValue = interval_upper_3*100)</code></pre>
@@ -483,11 +480,10 @@ interval_upper_4 = diff_ShockExpDesc + (critical_t_4*sp_4*a_4)
 
 # our calculations match confidence intervals from t-test output 
 ttest_ShockExpvShockDesc=t.test(d_ShockExp$mean_perc,d_ShockDesc$mean_perc, paired = FALSE, var.equal = FALSE)
-compareValues(interval_lower_4,ttest_ShockExpvShockDesc$conf.int[1])</code></pre>
-<pre><code>## [1] &quot;MINOR NUMERICAL ERROR. The reported value (-0.224726969614108) and the obtained value (-0.219022004204862) differed by 2.54%. NB obtained value was rounded to 15 decimal places.&quot;</code></pre>
-<pre class="r"><code>compareValues(interval_upper_4,ttest_ShockExpvShockDesc$conf.int[2])</code></pre>
-<pre><code>## [1] &quot;MINOR NUMERICAL ERROR. The reported value (-0.0689955880008863) and the obtained value (-0.0747005534101327) differed by 8.27%. NB obtained value was rounded to 16 decimal places.&quot;</code></pre>
-<pre class="r"><code># compare reported values to our calcuations
+#compareValues(interval_lower_4,ttest_ShockExpvShockDesc$conf.int[1])
+#compareValues(interval_upper_4,ttest_ShockExpvShockDesc$conf.int[2])
+
+# compare reported values to our calcuations
 compareValues(reportedValue = -.1, obtainedValue = interval_upper_4*100)</code></pre>
 <pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (-0.1) and the obtained value (-6.9) differed by 6800%. NB obtained value was rounded to 1 decimal places.&quot;</code></pre>
 <pre class="r"><code>compareValues(reportedValue = -20, obtainedValue = interval_lower_4*100)</code></pre>
@@ -496,7 +492,7 @@ compareValues(reportedValue = -.1, obtainedValue = interval_upper_4*100)</code><
 </div>
 <div id="step-5-conclusion" class="section level2">
 <h2>Step 5: Conclusion</h2>
-<pre class="r"><code>codReport(Report_Type = 'pilot',
+<pre class="r"><code>codReport(Report_Type = 'joint',
           Article_ID = 'TvdWP', 
           Insufficient_Information_Errors = 0,
           Decision_Errors = 0, 
