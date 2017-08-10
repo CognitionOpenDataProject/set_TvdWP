@@ -33,15 +33,13 @@ The researchers were interested in how shock affected risk-taking behavior. The 
 
 ------
 
-[The chunk below sets up some formatting options for the R Markdown document]
-
 ```{r global_options, include=FALSE}
 knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
 ```
 
 ## Step 1: Load packages
 
-[Some useful packages are being loaded below. You can add any additional ones you might need too.]
+Some useful packages are being loaded below.
 
 ```{r}
 library(tidyverse) # for data munging
@@ -49,7 +47,7 @@ library(knitr) # for kable table formating
 library(haven) # import and export 'SPSS', 'Stata' and 'SAS' Files
 library(readxl) # import excel files
 library(CODreports) # custom report functions
-library(forcats) #manipulating factors in data frames
+library(forcats) # manipulating factors in data frames
 ```
 
 ## Step 2: Load data
@@ -93,6 +91,9 @@ d_Desc = full_join(d_ShockDesc,d_NoShockDesc)
 ```
 
 ### Descriptive statistics
+
+Here we try to reproduce the means:
+
 ```{r}
 ##### MEANS #####
 
@@ -138,10 +139,11 @@ compareValues(reportedValue = -4.5, obtainedValue = diff_Exp*100)
 #4. Shock Experience vs. Shock Description
 diff_ShockExpDesc = mean_ShockExp - mean_ShockDesc
 compareValues(reportedValue = -14.7, obtainedValue = diff_ShockExpDesc*100)
-
 ```
 
 ### Inferential statistics
+
+Here we try to reproduce the confidence intervals:
 
 ```{r}
 ##### CONFIDENCE INTERVALS #####
@@ -169,6 +171,7 @@ interval_lower_1 = diff_Shock_NoShock - (critical_t_1*sp_1*a_1)
 
 # our calculations match confidence intervals from t-test output 
 ttest_ShockvNoShock=t.test(d_Shock$mean_perc,d_NoShock$mean_perc, paired = FALSE, var.equal = FALSE)
+
 # rounding errors here, don't match exactly but pretty close.
 #compareValues(interval_lower_1,ttest_ShockvNoShock$conf.int[1])
 #compareValues(interval_upper_1,ttest_ShockvNoShock$conf.int[2])
@@ -284,8 +287,6 @@ codReport(Report_Type = 'joint',
 
 
 Means and differences for each of the comparison conditions were consistent with the values that the authors reported. However, we had difficulty matching the 95% confidence intervals that were reported. We attempted to manually calculate the confidence intervals with the formula they printed in footnote 2 on p. 368, but the confidence intervals that we obtained did not match theirs. However, they did match values we obtained when we ran t-tests on their comparisons of interest (with slight rounding errors).
-
-
 
 ```{r session_info, include=TRUE, echo=TRUE, results='markup'}
 devtools::session_info()
