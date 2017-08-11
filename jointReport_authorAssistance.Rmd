@@ -1,0 +1,310 @@
+---
+title: "COD Reproducibility Report"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+#### Article ID: TvdWP
+#### Pilot: Mika Asaba
+#### Co-pilot: Bria Long
+#### Start date: 03/11/2017
+#### End date: 
+
+-------
+
+#### Methods summary: 
+
+Pariticpants were given a hypothetical portfolio of 100 euros and were asked to distribute it between a risky option and a safe option in each monthly period (1-172). The safe option was a cash deposit account offering .25% rate of return each month. The risky option was the Spanish stock index fund which offerred monthly rates of return (obtained from July 1999 to September 2013). Participants were in one of four conditions: "shock experience" (had to make investments across all 172 periods; experienced an initial decrease until period 40), "no-shock experience" (started at period 40), "shock description" (started at period 100 but viewed description of first 40 periods), and "no-shock description" (started at period 100 and did not view description of first 40 periods).
+
+
+#### Target outcomes: 
+
+The researchers were interested in how shock affected risk-taking behavior. The measure of risk taking **R** is defined as the **proportion of a person’s investment in the index fund (vs. the safe cash deposit)**.
+
+1. Shock (Shock experience + Shock description) vs. No-Shock (No-shock experience + No-shock description): Shock vs. No-shock groups took similar financial risks (shock condition; Rs = 29.7%) as did participants who were unaware of the trend (no-shock condition; Rns = 32.5%), Rs–ns = −2.8%, 95% CI [−7.2%, 1.6%].
+
+2. Shock description vs. No-shock description: Participants who learned from description took almost identical risk in the shock (Rsd = 37.1%) and no-shock conditions (Rnsd = 38.1%), Rsd–nsd = −1% [−7%, 5%]. 
+
+3. Shock experience vs. No-shock experience: Participants in the shock experience condition took less risk (Rse = 22.4%) than did participants in the no-shock experience condition (Rnse = 26.9%). Although this difference in the average R may not indicate a true population difference, Rse–nse = −4.5% [−11%, 1.7%], 
+
+4. Shock experience vs. Shock description: Participants who experienced the shock also took less risk than participants who learned about it from description, Rse–sd = −14.7% [−20%, −0.1%].
+
+------
+
+[The chunk below sets up some formatting options for the R Markdown document]
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
+```
+
+## Step 1: Load packages
+
+[Some useful packages are being loaded below. You can add any additional ones you might need too.]
+
+```{r}
+library(tidyverse) # for data munging
+library(knitr) # for kable table formating
+library(haven) # import and export 'SPSS', 'Stata' and 'SAS' Files
+library(readxl) # import excel files
+library(CODreports) # custom report functions
+library(forcats) #manipulating factors in data frames
+```
+
+## Step 2: Load data
+
+```{r}
+d = read_tsv("data/data.txt")
+```
+
+## Step 3: Tidy data
+
+```{r}
+#factor subject and condition columns
+str(d)
+d$subject = as_factor(d$subject)
+d$condition = as_factor(d$condition)
+```
+
+## Step 4: Run analysis
+
+### Pre-processing
+```{r}
+d = subset(d,d$period >= 100) #only look at periods 100-172
+
+#make summary table of means for each of the conditions
+d_avgs = d %>%
+  na.omit() %>%
+  group_by(subject,condition) %>%
+  summarise(mean_perc = mean(perc_stock))
+
+#make separate data frames for each condition
+d_ShockExp = subset(d_avgs,d_avgs$condition == "Shock experience") # noted as "Long experience" in author's code
+d_NoShockExp = subset(d_avgs,d_avgs$condition == "No-shock experience") # noted as "Short experience" in author's code
+d_ShockDesc = subset(d_avgs,d_avgs$condition == "Shock description")
+d_NoShockDesc = subset(d_avgs,d_avgs$condition == "No-shock description")
+
+#combine conditions by Shock (yes/no) and type of exposure (Experience/Description)
+d_Shock = full_join(d_ShockExp,d_ShockDesc)
+d_NoShock = full_join(d_NoShockExp,d_NoShockDesc)
+d_Exp = full_join(d_ShockExp,d_NoShockExp)
+d_Desc = full_join(d_ShockDesc,d_NoShockDesc)
+```
+
+### Descriptive statistics
+```{r}
+##### MEANS #####
+
+# Mean of shock condition, collapsed across exposure type
+mean_Shock = mean(d_Shock$mean_perc) 
+compareValues(reportedValue = 29.7, obtainedValue = mean_Shock*100) 
+
+# Mean of no shock condition, collapsed across exposure type
+mean_NoShock = mean(d_NoShock$mean_perc) 
+compareValues(reportedValue = 32.5, obtainedValue = mean_NoShock*100)
+
+# Mean of shock-description condition
+mean_ShockDesc = mean(d_ShockDesc$mean_perc) 
+compareValues(reportedValue = 37.1, obtainedValue = mean_ShockDesc*100)
+
+# Mean of no-shock description condition
+mean_NoShockDesc = mean(d_NoShockDesc$mean_perc) 
+compareValues(reportedValue = 38.1, obtainedValue = mean_NoShockDesc*100)
+
+# Mean of shock experience condition
+mean_ShockExp = mean(d_ShockExp$mean_perc)
+compareValues(reportedValue = 22.4, obtainedValue = mean_ShockExp*100)
+
+# Mean of no shock experience condition
+mean_NoShockExp = mean(d_NoShockExp$mean_perc) 
+compareValues(reportedValue = 26.9, obtainedValue = mean_NoShockExp*100)
+
+
+##### Difference in Means #####
+
+#1. Shock vs. No-Shock
+diff_Shock_NoShock = mean_Shock - mean_NoShock
+compareValues(reportedValue = -2.8, obtainedValue = diff_Shock_NoShock*100)
+
+#2. Shock Desc vs. No-Shock Desc
+diff_Desc = mean_ShockDesc - mean_NoShockDesc
+compareValues(reportedValue = -1, obtainedValue = diff_Desc*100)
+
+#3. Shock Experience vs. No-Shock Experience
+diff_Exp = mean_ShockExp - mean_NoShockExp
+compareValues(reportedValue = -4.5, obtainedValue = diff_Exp*100)
+
+#4. Shock Experience vs. Shock Description
+diff_ShockExpDesc = mean_ShockExp - mean_ShockDesc
+compareValues(reportedValue = -14.7, obtainedValue = diff_ShockExpDesc*100)
+
+```
+
+### Inferential statistics
+
+```{r}
+##### CONFIDENCE INTERVALS #####
+
+#1. Shock vs. No-Shock
+# get df (# of participants 1st group + # of participants 2nd group - 2)
+df_1 = 100 + 100 - 2 
+
+# get critical t-value using this df
+critical_t_1 = qt(.975,df_1) # .975 = 1 - (.05/2)
+
+# get pooled estimate of within-subjects standard deviation for these two groups
+s_Shock = sd(d_Shock$mean_perc) 
+s_Shock_sq = s_Shock^2
+s_NoShock = sd(d_NoShock$mean_perc)
+s_NoShock_sq = s_NoShock^2
+sp_1 = sqrt(((99*s_Shock_sq) + (99*s_NoShock_sq))/df_1) # pooled sd 
+
+## Descrepancy in calculation of pooled standard error
+# original formula from author's code - contains parenthesis error (third parenthesis from left groups only part of nominator of the equation)
+#l_s_pooled_sd <- sqrt((((length(l$mean_perc_stock) - 1)*sd(l$mean_perc_stock)^2 + length(s$mean_perc_stock) -1)*sd(s$mean_perc_stock)^2)/(length(l$mean_perc_stock) + length(s$mean_perc_stock) - 2))
+
+# corrected formula from authors code (note new parentheses!)
+l_s_pooled_sd <- sqrt(((length(d_Shock$mean_perc) - 1)*sd(d_Shock$mean_perc)^2 + (length(d_NoShock$mean_perc) - 1)*sd(d_NoShock$mean_perc)^2)/(length(d_Shock$mean_perc) + length(d_NoShock$mean_perc) - 2))
+
+# formula broken down
+l_s_pooled_sd_nom <- (length(d_Shock$mean_perc) - 1)*sd(d_Shock$mean_perc)^2 + (length(d_NoShock$mean_perc) - 1)*sd(d_NoShock$mean_perc)^2
+l_s_pooled_sd_denom=(length(d_Shock$mean_perc) + length(d_NoShock$mean_perc) - 2)
+# l_s_pooled_sd_denom==df_1 true
+l_s_pooled_sd_recalc=sqrt(l_s_pooled_sd_nom/l_s_pooled_sd_denom)
+
+# check if these are all the same
+l_s_pooled_sd==l_s_pooled_sd_recalc # matches broken down version of formula
+l_s_pooled_sd==sp_1 # matches our calculations
+
+# next term in formula
+a_1 = sqrt((1/100)+(1/100)) 
+
+# calculate upper and lower bounds of 95% CI
+interval_upper_1 = diff_Shock_NoShock + (critical_t_1*sp_1*a_1)
+interval_lower_1 = diff_Shock_NoShock - (critical_t_1*sp_1*a_1)
+
+# our calculations match confidence intervals from t-test output 
+ttest_ShockvNoShock=t.test(d_Shock$mean_perc,d_NoShock$mean_perc, paired = FALSE, var.equal = FALSE)
+# rounding errors here, don't match exactly but pretty close.
+#compareValues(interval_lower_1,ttest_ShockvNoShock$conf.int[1])
+#compareValues(interval_upper_1,ttest_ShockvNoShock$conf.int[2])
+
+# compare reported values to our calcuations
+compareValues(reportedValue = -7.2, obtainedValue = interval_lower_1*100)
+compareValues(reportedValue = 1.6, obtainedValue = interval_upper_1*100)
+
+#2. Shock Description vs. No-Shock Description
+# get df (# of participants 1st group + # of participants 2nd group - 2)
+df_2 = 50 + 50 - 2
+
+# get critical t-value using this df
+critical_t_2 = qt(.975,df_2)
+
+# get pooled estimate of within-subjects standard deviation for these two groups
+sd_ShockDesc = sd(d_ShockDesc$mean_perc)
+sd_ShockDesc_sq = sd_ShockDesc^2
+sd_NoShockDesc = sd(d_NoShockDesc$mean_perc)
+sd_NoShockDesc_sq = sd_NoShockDesc^2
+sp_2 = sqrt(((49*sd_ShockDesc_sq) + (49*sd_NoShockDesc_sq))/df_2)
+
+# next term in formula
+a_2 = sqrt((1/50)+(1/50))
+
+# calculate upper and lower bounds of 95% CI
+interval_upper_2 = diff_Desc + (critical_t_2*sp_2*a_2)
+interval_lower_2 = diff_Desc - (critical_t_2*sp_2*a_2)
+
+# our calculations match confidence intervals from t-test output 
+ttest_ShockvNoShockDesc=t.test(d_ShockDesc$mean_perc,d_NoShockDesc$mean_perc, paired = FALSE, var.equal = FALSE)
+# rounding errors here, don't match exactly but pretty close.
+#compareValues(interval_lower_2,ttest_ShockvNoShockDesc$conf.int[1])
+#compareValues(interval_upper_2,ttest_ShockvNoShockDesc$conf.int[2])
+
+# compare reported values to our calcuations
+compareValues(reportedValue = -7, obtainedValue = interval_lower_2*100)
+compareValues(reportedValue = 5, obtainedValue = interval_upper_2*100)
+
+#3. Shock Experience vs. No-Shock Experience
+# get df (# of participants 1st group + # of participants 2nd group - 2)
+df_3 = 50 + 50 - 2
+
+# get critical t-value using this df
+critical_t_3 = qt(.975,df_3)
+
+# calculate pooled variance
+sd_ShockExp = sd(d_ShockExp$mean_perc)
+sd_ShockExp_sq = sd_ShockExp^2
+sd_NoShockExp = sd(d_NoShockExp$mean_perc)
+sd_NoShockExp_sq = sd_NoShockExp^2
+sp_3 = sqrt(((49*sd_ShockExp_sq) + (49*sd_NoShockExp_sq))/df_3)
+
+# next term in formula
+a_3 = sqrt((1/50)+(1/50))
+
+# calculate upper and lower bounds of 95% CI
+interval_upper_3 = diff_Exp + (critical_t_3*sp_3*a_3)
+interval_lower_3 = diff_Exp - (critical_t_3*sp_3*a_3)
+
+# our calculations match confidence intervals from t-test output 
+ttest_ShockvNoShockExp=t.test(d_ShockExp$mean_perc,d_NoShockExp$mean_perc, paired = FALSE, var.equal = FALSE)
+# rounding errors here, don't match exactly but pretty close.
+#compareValues(interval_lower_3,ttest_ShockvNoShockExp$conf.int[1])
+#compareValues(interval_upper_3,ttest_ShockvNoShockExp$conf.int[2])
+
+# compare reported values to our calcuations
+compareValues(reportedValue = -11, obtainedValue = interval_lower_3*100)
+compareValues(reportedValue = 1.7, obtainedValue = interval_upper_3*100)
+
+#4. Shock Experience vs. Shock Description
+# get df (# of participants 1st group + # of participants 2nd group - 2)
+df_4 = 50 + 50 - 2
+
+# get critical t-value using this df
+critical_t_4 = qt(.975,df_4)
+
+# calculate pooled variance
+sd_ShockExp = sd(d_ShockExp$mean_perc)
+sd_ShockExp_sq = sd_ShockExp^2
+sd_ShockDesc = sd(d_ShockDesc$mean_perc)
+sd_ShockDesc_sq = sd_ShockDesc^2
+sp_4 = sqrt(((49*sd_ShockExp_sq) + (49*sd_NoShockExp_sq))/df_4)
+
+# next term in formula
+a_4 = sqrt((1/50)+(1/50))
+
+# calculate upper and lower bounds of 95% CI
+interval_lower_4 = diff_ShockExpDesc - (critical_t_4*sp_4*a_4)
+interval_upper_4 = diff_ShockExpDesc + (critical_t_4*sp_4*a_4)
+
+# our calculations match confidence intervals from t-test output 
+ttest_ShockExpvShockDesc=t.test(d_ShockExp$mean_perc,d_ShockDesc$mean_perc, paired = FALSE, var.equal = FALSE)
+# rounding errors here, don't match exactly but pretty close.
+#compareValues(interval_lower_4,ttest_ShockExpvShockDesc$conf.int[1])
+#compareValues(interval_upper_4,ttest_ShockExpvShockDesc$conf.int[2])
+
+# compare reported values to our calcuations
+compareValues(reportedValue = -20, obtainedValue = interval_lower_4*100)
+compareValues(reportedValue = -.1, obtainedValue = interval_upper_4*100)
+```
+
+## Step 5: Conclusion
+
+```{r}
+codReport(Report_Type = 'joint',
+          Article_ID = 'TvdWP', 
+          Insufficient_Information_Errors = 0,
+          Decision_Errors = 0, 
+          Major_Numerical_Errors = 8, 
+          Minor_Numerical_Errors = 0)
+```
+
+
+Means and differences for each of the comparison conditions were consistent with the values that the authors reported. However, we had difficulty matching the 95% confidence intervals that were reported. We attempted to manually calculate the confidence intervals with the formula they printed in footnote 2 on p. 368, but the confidence intervals that we obtained did not match theirs. However, they did match values we obtained when we ran t-tests on their comparisons of interest (with slight rounding errors).
+
+Update: Author sent us their analysis code, where we found their implementation of the confidence intervals formula. Their code has a parentheses error which resulted in an incorrect calculation of the pooled standard deviation. A corrected version of their implemented formula is pasted above in the calculation of the first confidence interval for reference.
+
+
+```{r session_info, include=TRUE, echo=TRUE, results='markup'}
+devtools::session_info()
+```
