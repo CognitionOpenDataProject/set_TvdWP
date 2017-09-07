@@ -227,11 +227,11 @@ div.tocify {
 <div id="co-pilot-bria-long" class="section level4">
 <h4>Co-pilot: Bria Long</h4>
 </div>
-<div id="start-date-03112017" class="section level4">
-<h4>Start date: 03/11/2017</h4>
+<div id="start-date-011032017" class="section level4">
+<h4>Start date: 011/03/2017</h4>
 </div>
-<div id="end-date" class="section level4">
-<h4>End date:</h4>
+<div id="end-date-06092017" class="section level4">
+<h4>End date: 06/09/2017</h4>
 <hr />
 </div>
 <div id="methods-summary" class="section level4">
@@ -248,11 +248,11 @@ div.tocify {
 <li><p>Shock experience vs. Shock description: Participants who experienced the shock also took less risk than participants who learned about it from description, Rse–sd = −14.7% [−20%, −0.1%].</p></li>
 </ol>
 <hr />
-<p>[The chunk below sets up some formatting options for the R Markdown document]</p>
+<p>The chunk below sets up some formatting options for the R Markdown document</p>
 </div>
 <div id="step-1-load-packages" class="section level2">
 <h2>Step 1: Load packages</h2>
-<p>[Some useful packages are being loaded below. You can add any additional ones you might need too.]</p>
+<p>Some useful packages are being loaded below. You can add any additional ones you might need too.</p>
 <pre class="r"><code>library(tidyverse) # for data munging
 library(knitr) # for kable table formating
 library(haven) # import and export 'SPSS', 'Stata' and 'SAS' Files
@@ -302,8 +302,8 @@ d_avgs = d %&gt;%
   summarise(mean_perc = mean(perc_stock))
 
 #make separate data frames for each condition
-d_ShockExp = subset(d_avgs,d_avgs$condition == &quot;Shock experience&quot;)
-d_NoShockExp = subset(d_avgs,d_avgs$condition == &quot;No-shock experience&quot;)
+d_ShockExp = subset(d_avgs,d_avgs$condition == &quot;Shock experience&quot;) # noted as &quot;Long experience&quot; in author's code
+d_NoShockExp = subset(d_avgs,d_avgs$condition == &quot;No-shock experience&quot;) # noted as &quot;Short experience&quot; in author's code
 d_ShockDesc = subset(d_avgs,d_avgs$condition == &quot;Shock description&quot;)
 d_NoShockDesc = subset(d_avgs,d_avgs$condition == &quot;No-shock description&quot;)
 
@@ -378,12 +378,35 @@ s_NoShock = sd(d_NoShock$mean_perc)
 s_NoShock_sq = s_NoShock^2
 sp_1 = sqrt(((99*s_Shock_sq) + (99*s_NoShock_sq))/df_1) # pooled sd 
 
+AuthorsPooledSD &lt;- function(cond1,cond2) {
+  sqrt((((length(cond1$mean_perc) - 1)*sd(cond1$mean_perc)^2 + length(cond2$mean_perc) - 1)*sd(cond2$mean_perc)^2)/(length(cond1$mean_perc) + length(cond2$mean_perc) - 2))
+}
+
+sp_authors_1 = AuthorsPooledSD(d_Shock,d_NoShock)
+
+## Descrepancy in calculation of pooled standard error
+# original formula from author's code - contains parenthesis error (third parenthesis from left groups only part of nominator of the equation)
+#l_s_pooled_sd &lt;- sqrt((((length(l$mean_perc_stock) - 1)*sd(l$mean_perc_stock)^2 + length(s$mean_perc_stock) #-1)*sd(s$mean_perc_stock)^2)/(length(l$mean_perc_stock) + length(s$mean_perc_stock) - 2))
+
+# interpreted into our own code
+#l_s_pooled_sd &lt;- sqrt((((length(d_Shock$mean_perc) - 1)*sd(d_Shock$mean_perc)^2 + length(d_NoShock$mean_perc) -  1)*sd(d_NoShock$mean_perc)^2)/(length(d_Shock$mean_perc) + length(d_NoShock$mean_perc) - 2))
+
+# formula broken down
+#l_s_pooled_sd_nom &lt;- (length(d_Shock$mean_perc) - 1)*sd(d_Shock$mean_perc)^2 + (length(d_NoShock$mean_perc) - 1)*sd(d_NoShock$mean_perc)^2
+#l_s_pooled_sd_denom=(length(d_Shock$mean_perc) + length(d_NoShock$mean_perc) - 2)
+# l_s_pooled_sd_denom==df_1 true
+#l_s_pooled_sd_recalc=sqrt(l_s_pooled_sd_nom/l_s_pooled_sd_denom)
+
+# check if these are all the same
+#l_s_pooled_sd==l_s_pooled_sd_recalc # matches broken down version of formula
+#l_s_pooled_sd==sp_1 # matches our calculations
+
 # next term in formula
 a_1 = sqrt((1/100)+(1/100)) 
 
 # calculate upper and lower bounds of 95% CI
-interval_upper_1 = diff_Shock_NoShock + (critical_t_1*sp_1*a_1)
-interval_lower_1 = diff_Shock_NoShock - (critical_t_1*sp_1*a_1)
+interval_upper_1 = diff_Shock_NoShock + (critical_t_1*sp_authors_1*a_1)
+interval_lower_1 = diff_Shock_NoShock - (critical_t_1*sp_authors_1*a_1)
 
 # our calculations match confidence intervals from t-test output 
 ttest_ShockvNoShock=t.test(d_Shock$mean_perc,d_NoShock$mean_perc, paired = FALSE, var.equal = FALSE)
@@ -393,9 +416,9 @@ ttest_ShockvNoShock=t.test(d_Shock$mean_perc,d_NoShock$mean_perc, paired = FALSE
 
 # compare reported values to our calcuations
 compareValues(reportedValue = -7.2, obtainedValue = interval_lower_1*100)</code></pre>
-<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (-7.2) and the obtained value (-8.6) differed by 19.44%. NB obtained value was rounded to 1 decimal places.&quot;</code></pre>
+<pre><code>## [1] &quot;MATCH. The reported value (-7.2) and the obtained value (-7.2) differed by 0%. NB obtained value was rounded to 1 decimal places.&quot;</code></pre>
 <pre class="r"><code>compareValues(reportedValue = 1.6, obtainedValue = interval_upper_1*100)</code></pre>
-<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (1.6) and the obtained value (3) differed by 87.5%. NB obtained value was rounded to 1 decimal places.&quot;</code></pre>
+<pre><code>## [1] &quot;MINOR NUMERICAL ERROR. The reported value (1.6) and the obtained value (1.7) differed by 6.25%. NB obtained value was rounded to 1 decimal places.&quot;</code></pre>
 <pre class="r"><code>#2. Shock Description vs. No-Shock Description
 # get df (# of participants 1st group + # of participants 2nd group - 2)
 df_2 = 50 + 50 - 2
@@ -410,12 +433,15 @@ sd_NoShockDesc = sd(d_NoShockDesc$mean_perc)
 sd_NoShockDesc_sq = sd_NoShockDesc^2
 sp_2 = sqrt(((49*sd_ShockDesc_sq) + (49*sd_NoShockDesc_sq))/df_2)
 
+# authors pooled sd
+sp_authors_2 = AuthorsPooledSD(d_ShockDesc,d_NoShockDesc)
+
 # next term in formula
 a_2 = sqrt((1/50)+(1/50))
 
 # calculate upper and lower bounds of 95% CI
-interval_upper_2 = diff_Desc + (critical_t_2*sp_2*a_2)
-interval_lower_2 = diff_Desc - (critical_t_2*sp_2*a_2)
+interval_upper_2 = diff_Desc + (critical_t_2*sp_authors_2*a_2)
+interval_lower_2 = diff_Desc - (critical_t_2*sp_authors_2*a_2)
 
 # our calculations match confidence intervals from t-test output 
 ttest_ShockvNoShockDesc=t.test(d_ShockDesc$mean_perc,d_NoShockDesc$mean_perc, paired = FALSE, var.equal = FALSE)
@@ -425,9 +451,9 @@ ttest_ShockvNoShockDesc=t.test(d_ShockDesc$mean_perc,d_NoShockDesc$mean_perc, pa
 
 # compare reported values to our calcuations
 compareValues(reportedValue = -7, obtainedValue = interval_lower_2*100)</code></pre>
-<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (-7) and the obtained value (-9) differed by 28.57%. NB obtained value was rounded to 0 decimal places.&quot;</code></pre>
+<pre><code>## [1] &quot;MATCH. The reported value (-7) and the obtained value (-7) differed by 0%. NB obtained value was rounded to 0 decimal places.&quot;</code></pre>
 <pre class="r"><code>compareValues(reportedValue = 5, obtainedValue = interval_upper_2*100)</code></pre>
-<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (5) and the obtained value (7) differed by 40%. NB obtained value was rounded to 0 decimal places.&quot;</code></pre>
+<pre><code>## [1] &quot;MATCH. The reported value (5) and the obtained value (5) differed by 0%. NB obtained value was rounded to 0 decimal places.&quot;</code></pre>
 <pre class="r"><code>#3. Shock Experience vs. No-Shock Experience
 # get df (# of participants 1st group + # of participants 2nd group - 2)
 df_3 = 50 + 50 - 2
@@ -442,12 +468,15 @@ sd_NoShockExp = sd(d_NoShockExp$mean_perc)
 sd_NoShockExp_sq = sd_NoShockExp^2
 sp_3 = sqrt(((49*sd_ShockExp_sq) + (49*sd_NoShockExp_sq))/df_3)
 
+# authors pooled sd
+sp_authors_3 = AuthorsPooledSD(d_ShockExp,d_NoShockExp)
+
 # next term in formula
 a_3 = sqrt((1/50)+(1/50))
 
 # calculate upper and lower bounds of 95% CI
-interval_upper_3 = diff_Exp + (critical_t_3*sp_3*a_3)
-interval_lower_3 = diff_Exp - (critical_t_3*sp_3*a_3)
+interval_upper_3 = diff_Exp + (critical_t_3*sp_authors_3*a_3)
+interval_lower_3 = diff_Exp - (critical_t_3*sp_authors_3*a_3)
 
 # our calculations match confidence intervals from t-test output 
 ttest_ShockvNoShockExp=t.test(d_ShockExp$mean_perc,d_NoShockExp$mean_perc, paired = FALSE, var.equal = FALSE)
@@ -457,9 +486,9 @@ ttest_ShockvNoShockExp=t.test(d_ShockExp$mean_perc,d_NoShockExp$mean_perc, paire
 
 # compare reported values to our calcuations
 compareValues(reportedValue = -11, obtainedValue = interval_lower_3*100)</code></pre>
-<pre><code>## [1] &quot;MINOR NUMERICAL ERROR. The reported value (-11) and the obtained value (-12) differed by 9.09%. NB obtained value was rounded to 0 decimal places.&quot;</code></pre>
+<pre><code>## [1] &quot;MATCH. The reported value (-11) and the obtained value (-11) differed by 0%. NB obtained value was rounded to 0 decimal places.&quot;</code></pre>
 <pre class="r"><code>compareValues(reportedValue = 1.7, obtainedValue = interval_upper_3*100)</code></pre>
-<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (1.7) and the obtained value (3.3) differed by 94.12%. NB obtained value was rounded to 1 decimal places.&quot;</code></pre>
+<pre><code>## [1] &quot;MATCH. The reported value (1.7) and the obtained value (1.7) differed by 0%. NB obtained value was rounded to 1 decimal places.&quot;</code></pre>
 <pre class="r"><code>#4. Shock Experience vs. Shock Description
 # get df (# of participants 1st group + # of participants 2nd group - 2)
 df_4 = 50 + 50 - 2
@@ -474,12 +503,15 @@ sd_ShockDesc = sd(d_ShockDesc$mean_perc)
 sd_ShockDesc_sq = sd_ShockDesc^2
 sp_4 = sqrt(((49*sd_ShockExp_sq) + (49*sd_NoShockExp_sq))/df_4)
 
+# authors pooled sd
+sp_authors_4 = AuthorsPooledSD(d_ShockExp,d_ShockDesc)
+
 # next term in formula
 a_4 = sqrt((1/50)+(1/50))
 
 # calculate upper and lower bounds of 95% CI
-interval_lower_4 = diff_ShockExpDesc - (critical_t_4*sp_4*a_4)
-interval_upper_4 = diff_ShockExpDesc + (critical_t_4*sp_4*a_4)
+interval_lower_4 = diff_ShockExpDesc - (critical_t_4*sp_authors_4*a_4)
+interval_upper_4 = diff_ShockExpDesc + (critical_t_4*sp_authors_4*a_4)
 
 # our calculations match confidence intervals from t-test output 
 ttest_ShockExpvShockDesc=t.test(d_ShockExp$mean_perc,d_ShockDesc$mean_perc, paired = FALSE, var.equal = FALSE)
@@ -489,9 +521,10 @@ ttest_ShockExpvShockDesc=t.test(d_ShockExp$mean_perc,d_ShockDesc$mean_perc, pair
 
 # compare reported values to our calcuations
 compareValues(reportedValue = -20, obtainedValue = interval_lower_4*100)</code></pre>
-<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (-20) and the obtained value (-22) differed by 10%. NB obtained value was rounded to 0 decimal places.&quot;</code></pre>
+<pre><code>## [1] &quot;MATCH. The reported value (-20) and the obtained value (-20) differed by 0%. NB obtained value was rounded to 0 decimal places.&quot;</code></pre>
 <pre class="r"><code>compareValues(reportedValue = -.1, obtainedValue = interval_upper_4*100)</code></pre>
-<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (-0.1) and the obtained value (-6.9) differed by 6800%. NB obtained value was rounded to 1 decimal places.&quot;</code></pre>
+<pre><code>## [1] &quot;MAJOR NUMERICAL ERROR. The reported value (-0.1) and the obtained value (-9.2) differed by 9100%. NB obtained value was rounded to 1 decimal places.&quot;</code></pre>
+<p>Rse–sd = −14.7% [−20%, −0.1%].</p>
 </div>
 </div>
 <div id="step-5-conclusion" class="section level2">
@@ -500,8 +533,8 @@ compareValues(reportedValue = -20, obtainedValue = interval_lower_4*100)</code><
           Article_ID = 'TvdWP', 
           Insufficient_Information_Errors = 0,
           Decision_Errors = 0, 
-          Major_Numerical_Errors = 8, 
-          Minor_Numerical_Errors = 0)</code></pre>
+          Major_Numerical_Errors = 1, 
+          Minor_Numerical_Errors = 1)</code></pre>
 <table>
 <thead>
 <tr class="header">
@@ -516,153 +549,154 @@ compareValues(reportedValue = -20, obtainedValue = interval_lower_4*100)</code><
 <tr class="odd">
 <td align="right">0</td>
 <td align="right">0</td>
-<td align="right">8</td>
-<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">1</td>
 <td align="left">Failure</td>
 </tr>
 </tbody>
 </table>
 <p>Means and differences for each of the comparison conditions were consistent with the values that the authors reported. However, we had difficulty matching the 95% confidence intervals that were reported. We attempted to manually calculate the confidence intervals with the formula they printed in footnote 2 on p. 368, but the confidence intervals that we obtained did not match theirs. However, they did match values we obtained when we ran t-tests on their comparisons of interest (with slight rounding errors).</p>
+<p>Update: Author sent us their analysis code, where we found their implementation of the confidence intervals formula. Their code has a parentheses error which resulted in an incorrect calculation of the pooled standard deviation. When we recalculated the confidence intervals using their (faulty) formula for the pooled SD, we were able to reproduce most of their confidence intervals with mostly no errors: there was still one minor numerical error and one major numerical error.</p>
 <pre class="r"><code>devtools::session_info()</code></pre>
 <pre><code>##  setting  value                       
-##  version  R version 3.3.3 (2017-03-06)
+##  version  R version 3.3.2 (2016-10-31)
 ##  system   x86_64, darwin13.4.0        
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Los_Angeles         
-##  date     2017-08-10                  
+##  date     2017-09-06                  
 ## 
-##  package    * version  date      
-##  assertthat   0.2.0    2017-04-11
-##  backports    1.1.0    2017-05-22
-##  base       * 3.3.3    2017-03-07
-##  bindr        0.1      2016-11-13
-##  bindrcpp     0.2      2017-06-17
-##  broom        0.4.2    2017-02-13
-##  cellranger   1.1.0    2016-07-27
-##  CODreports * 0.1      2017-08-10
-##  colorspace   1.2-6    2015-03-11
-##  datasets   * 3.3.3    2017-03-07
-##  devtools     1.13.3   2017-08-02
-##  digest       0.6.12   2017-01-27
-##  dplyr      * 0.7.2    2017-07-20
-##  evaluate     0.10.1   2017-06-24
-##  forcats    * 0.2.0    2017-01-23
-##  foreign      0.8-67   2016-09-13
-##  ggplot2    * 2.2.1    2016-12-30
-##  glue         1.1.1    2017-06-21
-##  graphics   * 3.3.3    2017-03-07
-##  grDevices  * 3.3.3    2017-03-07
-##  grid         3.3.3    2017-03-07
-##  gtable       0.2.0    2016-02-26
-##  haven      * 1.1.0    2017-07-09
-##  highr        0.6      2016-05-09
-##  hms          0.3      2016-11-22
-##  htmltools    0.3.6    2017-04-28
-##  httr         1.2.1    2016-07-03
-##  jsonlite     1.5      2017-06-01
-##  knitr      * 1.17     2017-08-10
-##  lattice      0.20-34  2016-09-06
-##  lazyeval     0.2.0    2016-06-12
-##  lubridate    1.6.0    2016-09-13
-##  magrittr     1.5      2014-11-22
-##  memoise      1.1.0    2017-04-21
-##  methods    * 3.3.3    2017-03-07
-##  mnormt       1.5-5    2016-10-15
-##  modelr       0.1.1    2017-07-24
-##  munsell      0.4.3    2016-02-13
-##  nlme         3.1-131  2017-02-06
-##  parallel     3.3.3    2017-03-07
-##  pkgconfig    2.0.1    2017-03-21
-##  plyr         1.8.4    2016-06-08
-##  psych        1.7.3.21 2017-03-22
-##  purrr      * 0.2.3    2017-08-02
-##  R6           2.2.2    2017-06-17
-##  Rcpp         0.12.12  2017-07-15
-##  readr      * 1.1.1    2017-05-16
-##  readxl     * 1.0.0    2017-04-18
-##  reshape2     1.4.2    2016-10-22
-##  rlang        0.1.1    2017-05-18
-##  rmarkdown    1.6      2017-06-15
-##  rprojroot    1.2      2017-01-16
-##  rvest        0.3.2    2016-06-17
-##  scales       0.4.1    2016-11-09
-##  stats      * 3.3.3    2017-03-07
-##  stringi      1.1.5    2017-04-07
-##  stringr      1.2.0    2017-02-18
-##  tibble     * 1.3.3    2017-05-28
-##  tidyr      * 0.6.3    2017-05-15
-##  tidyverse  * 1.1.1    2017-01-27
-##  tools        3.3.3    2017-03-07
-##  utils      * 3.3.3    2017-03-07
-##  withr        2.0.0    2017-07-28
-##  xml2         1.1.1    2017-01-24
-##  yaml         2.1.14   2016-11-12
+##  package    * version date      
+##  assertthat   0.2.0   2017-04-11
+##  backports    1.0.5   2017-01-18
+##  base       * 3.3.2   2016-10-31
+##  bindr        0.1     2016-11-13
+##  bindrcpp     0.2     2017-06-17
+##  broom        0.4.2   2017-02-13
+##  cellranger   1.1.0   2016-07-27
+##  CODreports * 0.1     2017-07-20
+##  colorspace   1.3-2   2016-12-14
+##  datasets   * 3.3.2   2016-10-31
+##  devtools     1.13.2  2017-06-02
+##  digest       0.6.12  2017-01-27
+##  dplyr      * 0.7.2   2017-07-20
+##  evaluate     0.10    2016-10-11
+##  forcats    * 0.2.0   2017-01-23
+##  foreign      0.8-67  2016-09-13
+##  ggplot2    * 2.2.1   2016-12-30
+##  glue         1.1.0   2017-06-13
+##  graphics   * 3.3.2   2016-10-31
+##  grDevices  * 3.3.2   2016-10-31
+##  grid         3.3.2   2016-10-31
+##  gtable       0.2.0   2016-02-26
+##  haven      * 1.0.0   2016-09-23
+##  highr        0.6     2016-05-09
+##  hms          0.3     2016-11-22
+##  htmltools    0.3.6   2017-04-28
+##  httr         1.3.1   2017-08-20
+##  jsonlite     1.5     2017-06-01
+##  knitr      * 1.16    2017-05-18
+##  lattice      0.20-34 2016-09-06
+##  lazyeval     0.2.0   2016-06-12
+##  lubridate    1.6.0   2016-09-13
+##  magrittr     1.5     2014-11-22
+##  memoise      1.0.0   2016-01-29
+##  methods    * 3.3.2   2016-10-31
+##  mnormt       1.5-5   2016-10-15
+##  modelr       0.1.0   2016-08-31
+##  munsell      0.4.3   2016-02-13
+##  nlme         3.1-128 2016-05-10
+##  parallel     3.3.2   2016-10-31
+##  pkgconfig    2.0.1   2017-03-21
+##  plyr         1.8.4   2016-06-08
+##  psych        1.7.5   2017-05-03
+##  purrr      * 0.2.2   2016-06-18
+##  R6           2.2.2   2017-06-17
+##  Rcpp         0.12.12 2017-07-15
+##  readr      * 1.1.0   2017-03-22
+##  readxl     * 1.0.0   2017-04-18
+##  reshape2     1.4.2   2016-10-22
+##  rlang        0.1.1   2017-05-18
+##  rmarkdown    1.6     2017-06-15
+##  rprojroot    1.2     2017-01-16
+##  rvest        0.3.2   2016-06-17
+##  scales       0.4.1   2016-11-09
+##  stats      * 3.3.2   2016-10-31
+##  stringi      1.1.2   2016-10-01
+##  stringr      1.2.0   2017-02-18
+##  tibble     * 1.3.3   2017-05-28
+##  tidyr      * 0.6.3   2017-05-15
+##  tidyverse  * 1.1.1   2017-01-27
+##  tools        3.3.2   2016-10-31
+##  utils      * 3.3.2   2016-10-31
+##  withr        1.0.2   2016-06-20
+##  xml2         1.1.1   2017-01-24
+##  yaml         2.1.14  2016-11-12
 ##  source                                              
 ##  cran (@0.2.0)                                       
 ##  CRAN (R 3.3.2)                                      
 ##  local                                               
 ##  cran (@0.1)                                         
 ##  cran (@0.2)                                         
-##  cran (@0.4.2)                                       
-##  cran (@1.1.0)                                       
-##  Github (CognitionOpenDataProject/CODreports@010531e)
+##  CRAN (R 3.3.2)                                      
 ##  CRAN (R 3.3.0)                                      
+##  Github (CognitionOpenDataProject/CODreports@010531e)
+##  CRAN (R 3.3.2)                                      
 ##  local                                               
 ##  CRAN (R 3.3.2)                                      
 ##  cran (@0.6.12)                                      
-##  cran (@0.7.2)                                       
 ##  CRAN (R 3.3.2)                                      
-##  cran (@0.2.0)                                       
-##  CRAN (R 3.3.3)                                      
-##  cran (@2.2.1)                                       
-##  cran (@1.1.1)                                       
-##  local                                               
-##  local                                               
-##  local                                               
 ##  CRAN (R 3.3.0)                                      
+##  cran (@0.2.0)                                       
+##  CRAN (R 3.3.2)                                      
+##  CRAN (R 3.3.2)                                      
 ##  cran (@1.1.0)                                       
-##  CRAN (R 3.3.0)                                      
-##  cran (@0.3)                                         
-##  CRAN (R 3.3.2)                                      
-##  CRAN (R 3.3.0)                                      
-##  CRAN (R 3.3.2)                                      
-##  CRAN (R 3.3.1)                                      
-##  CRAN (R 3.3.3)                                      
-##  cran (@0.2.0)                                       
-##  cran (@1.6.0)                                       
-##  CRAN (R 3.3.0)                                      
-##  CRAN (R 3.3.2)                                      
 ##  local                                               
-##  cran (@1.5-5)                                       
-##  cran (@0.1.1)                                       
+##  local                                               
+##  local                                               
 ##  CRAN (R 3.3.0)                                      
-##  CRAN (R 3.3.3)                                      
+##  CRAN (R 3.3.0)                                      
+##  CRAN (R 3.3.0)                                      
+##  CRAN (R 3.3.2)                                      
+##  cran (@0.3.6)                                       
+##  CRAN (R 3.3.2)                                      
+##  cran (@1.5)                                         
+##  cran (@1.16)                                        
+##  CRAN (R 3.3.2)                                      
+##  CRAN (R 3.3.0)                                      
+##  CRAN (R 3.3.0)                                      
+##  CRAN (R 3.3.0)                                      
+##  CRAN (R 3.3.0)                                      
+##  local                                               
+##  CRAN (R 3.3.0)                                      
+##  CRAN (R 3.3.0)                                      
+##  CRAN (R 3.3.0)                                      
+##  CRAN (R 3.3.2)                                      
 ##  local                                               
 ##  cran (@2.0.1)                                       
 ##  CRAN (R 3.3.0)                                      
-##  cran (@1.7.3.2)                                     
-##  cran (@0.2.3)                                       
 ##  CRAN (R 3.3.2)                                      
+##  CRAN (R 3.3.0)                                      
+##  cran (@2.2.2)                                       
 ##  cran (@0.12.12)                                     
-##  cran (@1.1.1)                                       
+##  CRAN (R 3.3.2)                                      
 ##  cran (@1.0.0)                                       
-##  cran (@1.4.2)                                       
+##  CRAN (R 3.3.0)                                      
 ##  cran (@0.1.1)                                       
-##  CRAN (R 3.3.1)                                      
+##  cran (@1.6)                                         
 ##  CRAN (R 3.3.2)                                      
-##  cran (@0.3.2)                                       
-##  cran (@0.4.1)                                       
+##  CRAN (R 3.3.0)                                      
+##  CRAN (R 3.3.2)                                      
 ##  local                                               
-##  cran (@1.1.5)                                       
-##  CRAN (R 3.3.1)                                      
+##  CRAN (R 3.3.0)                                      
+##  cran (@1.2.0)                                       
 ##  cran (@1.3.3)                                       
-##  cran (@0.6.3)                                       
-##  cran (@1.1.1)                                       
-##  local                                               
-##  local                                               
 ##  CRAN (R 3.3.2)                                      
+##  CRAN (R 3.3.2)                                      
+##  local                                               
+##  local                                               
+##  CRAN (R 3.3.0)                                      
 ##  cran (@1.1.1)                                       
 ##  CRAN (R 3.3.2)</code></pre>
 </div>

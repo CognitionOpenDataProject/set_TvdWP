@@ -9,8 +9,8 @@ output:
 #### Article ID: TvdWP
 #### Pilot: Mika Asaba
 #### Co-pilot: Bria Long
-#### Start date: 03/11/2017
-#### End date: 
+#### Start date: 011/03/2017
+#### End date: 06/09/2017
 
 -------
 
@@ -33,13 +33,15 @@ The researchers were interested in how shock affected risk-taking behavior. The 
 
 ------
 
+The chunk below sets up some formatting options for the R Markdown document
+
 ```{r global_options, include=FALSE}
 knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
 ```
 
 ## Step 1: Load packages
 
-Some useful packages are being loaded below.
+Some useful packages are being loaded below. You can add any additional ones you might need too.
 
 ```{r}
 library(tidyverse) # for data munging
@@ -47,7 +49,7 @@ library(knitr) # for kable table formating
 library(haven) # import and export 'SPSS', 'Stata' and 'SAS' Files
 library(readxl) # import excel files
 library(CODreports) # custom report functions
-library(forcats) # manipulating factors in data frames
+library(forcats) #manipulating factors in data frames
 ```
 
 ## Step 2: Load data
@@ -78,8 +80,8 @@ d_avgs = d %>%
   summarise(mean_perc = mean(perc_stock))
 
 #make separate data frames for each condition
-d_ShockExp = subset(d_avgs,d_avgs$condition == "Shock experience")
-d_NoShockExp = subset(d_avgs,d_avgs$condition == "No-shock experience")
+d_ShockExp = subset(d_avgs,d_avgs$condition == "Shock experience") # noted as "Long experience" in author's code
+d_NoShockExp = subset(d_avgs,d_avgs$condition == "No-shock experience") # noted as "Short experience" in author's code
 d_ShockDesc = subset(d_avgs,d_avgs$condition == "Shock description")
 d_NoShockDesc = subset(d_avgs,d_avgs$condition == "No-shock description")
 
@@ -91,9 +93,6 @@ d_Desc = full_join(d_ShockDesc,d_NoShockDesc)
 ```
 
 ### Descriptive statistics
-
-Here we try to reproduce the means:
-
 ```{r}
 ##### MEANS #####
 
@@ -139,11 +138,10 @@ compareValues(reportedValue = -4.5, obtainedValue = diff_Exp*100)
 #4. Shock Experience vs. Shock Description
 diff_ShockExpDesc = mean_ShockExp - mean_ShockDesc
 compareValues(reportedValue = -14.7, obtainedValue = diff_ShockExpDesc*100)
+
 ```
 
 ### Inferential statistics
-
-Here we try to reproduce the confidence intervals:
 
 ```{r}
 ##### CONFIDENCE INTERVALS #####
@@ -162,16 +160,38 @@ s_NoShock = sd(d_NoShock$mean_perc)
 s_NoShock_sq = s_NoShock^2
 sp_1 = sqrt(((99*s_Shock_sq) + (99*s_NoShock_sq))/df_1) # pooled sd 
 
+AuthorsPooledSD <- function(cond1,cond2) {
+  sqrt((((length(cond1$mean_perc) - 1)*sd(cond1$mean_perc)^2 + length(cond2$mean_perc) - 1)*sd(cond2$mean_perc)^2)/(length(cond1$mean_perc) + length(cond2$mean_perc) - 2))
+}
+
+sp_authors_1 = AuthorsPooledSD(d_Shock,d_NoShock)
+
+## Descrepancy in calculation of pooled standard error
+# original formula from author's code - contains parenthesis error (third parenthesis from left groups only part of nominator of the equation)
+#l_s_pooled_sd <- sqrt((((length(l$mean_perc_stock) - 1)*sd(l$mean_perc_stock)^2 + length(s$mean_perc_stock) #-1)*sd(s$mean_perc_stock)^2)/(length(l$mean_perc_stock) + length(s$mean_perc_stock) - 2))
+
+# interpreted into our own code
+#l_s_pooled_sd <- sqrt((((length(d_Shock$mean_perc) - 1)*sd(d_Shock$mean_perc)^2 + length(d_NoShock$mean_perc) -  1)*sd(d_NoShock$mean_perc)^2)/(length(d_Shock$mean_perc) + length(d_NoShock$mean_perc) - 2))
+
+# formula broken down
+#l_s_pooled_sd_nom <- (length(d_Shock$mean_perc) - 1)*sd(d_Shock$mean_perc)^2 + (length(d_NoShock$mean_perc) - 1)*sd(d_NoShock$mean_perc)^2
+#l_s_pooled_sd_denom=(length(d_Shock$mean_perc) + length(d_NoShock$mean_perc) - 2)
+# l_s_pooled_sd_denom==df_1 true
+#l_s_pooled_sd_recalc=sqrt(l_s_pooled_sd_nom/l_s_pooled_sd_denom)
+
+# check if these are all the same
+#l_s_pooled_sd==l_s_pooled_sd_recalc # matches broken down version of formula
+#l_s_pooled_sd==sp_1 # matches our calculations
+
 # next term in formula
 a_1 = sqrt((1/100)+(1/100)) 
 
 # calculate upper and lower bounds of 95% CI
-interval_upper_1 = diff_Shock_NoShock + (critical_t_1*sp_1*a_1)
-interval_lower_1 = diff_Shock_NoShock - (critical_t_1*sp_1*a_1)
+interval_upper_1 = diff_Shock_NoShock + (critical_t_1*sp_authors_1*a_1)
+interval_lower_1 = diff_Shock_NoShock - (critical_t_1*sp_authors_1*a_1)
 
 # our calculations match confidence intervals from t-test output 
 ttest_ShockvNoShock=t.test(d_Shock$mean_perc,d_NoShock$mean_perc, paired = FALSE, var.equal = FALSE)
-
 # rounding errors here, don't match exactly but pretty close.
 #compareValues(interval_lower_1,ttest_ShockvNoShock$conf.int[1])
 #compareValues(interval_upper_1,ttest_ShockvNoShock$conf.int[2])
@@ -194,12 +214,15 @@ sd_NoShockDesc = sd(d_NoShockDesc$mean_perc)
 sd_NoShockDesc_sq = sd_NoShockDesc^2
 sp_2 = sqrt(((49*sd_ShockDesc_sq) + (49*sd_NoShockDesc_sq))/df_2)
 
+# authors pooled sd
+sp_authors_2 = AuthorsPooledSD(d_ShockDesc,d_NoShockDesc)
+
 # next term in formula
 a_2 = sqrt((1/50)+(1/50))
 
 # calculate upper and lower bounds of 95% CI
-interval_upper_2 = diff_Desc + (critical_t_2*sp_2*a_2)
-interval_lower_2 = diff_Desc - (critical_t_2*sp_2*a_2)
+interval_upper_2 = diff_Desc + (critical_t_2*sp_authors_2*a_2)
+interval_lower_2 = diff_Desc - (critical_t_2*sp_authors_2*a_2)
 
 # our calculations match confidence intervals from t-test output 
 ttest_ShockvNoShockDesc=t.test(d_ShockDesc$mean_perc,d_NoShockDesc$mean_perc, paired = FALSE, var.equal = FALSE)
@@ -225,12 +248,15 @@ sd_NoShockExp = sd(d_NoShockExp$mean_perc)
 sd_NoShockExp_sq = sd_NoShockExp^2
 sp_3 = sqrt(((49*sd_ShockExp_sq) + (49*sd_NoShockExp_sq))/df_3)
 
+# authors pooled sd
+sp_authors_3 = AuthorsPooledSD(d_ShockExp,d_NoShockExp)
+
 # next term in formula
 a_3 = sqrt((1/50)+(1/50))
 
 # calculate upper and lower bounds of 95% CI
-interval_upper_3 = diff_Exp + (critical_t_3*sp_3*a_3)
-interval_lower_3 = diff_Exp - (critical_t_3*sp_3*a_3)
+interval_upper_3 = diff_Exp + (critical_t_3*sp_authors_3*a_3)
+interval_lower_3 = diff_Exp - (critical_t_3*sp_authors_3*a_3)
 
 # our calculations match confidence intervals from t-test output 
 ttest_ShockvNoShockExp=t.test(d_ShockExp$mean_perc,d_NoShockExp$mean_perc, paired = FALSE, var.equal = FALSE)
@@ -256,12 +282,15 @@ sd_ShockDesc = sd(d_ShockDesc$mean_perc)
 sd_ShockDesc_sq = sd_ShockDesc^2
 sp_4 = sqrt(((49*sd_ShockExp_sq) + (49*sd_NoShockExp_sq))/df_4)
 
+# authors pooled sd
+sp_authors_4 = AuthorsPooledSD(d_ShockExp,d_ShockDesc)
+
 # next term in formula
 a_4 = sqrt((1/50)+(1/50))
 
 # calculate upper and lower bounds of 95% CI
-interval_lower_4 = diff_ShockExpDesc - (critical_t_4*sp_4*a_4)
-interval_upper_4 = diff_ShockExpDesc + (critical_t_4*sp_4*a_4)
+interval_lower_4 = diff_ShockExpDesc - (critical_t_4*sp_authors_4*a_4)
+interval_upper_4 = diff_ShockExpDesc + (critical_t_4*sp_authors_4*a_4)
 
 # our calculations match confidence intervals from t-test output 
 ttest_ShockExpvShockDesc=t.test(d_ShockExp$mean_perc,d_ShockDesc$mean_perc, paired = FALSE, var.equal = FALSE)
@@ -274,6 +303,8 @@ compareValues(reportedValue = -20, obtainedValue = interval_lower_4*100)
 compareValues(reportedValue = -.1, obtainedValue = interval_upper_4*100)
 ```
 
+Rse–sd = −14.7% [−20%, −0.1%].
+
 ## Step 5: Conclusion
 
 ```{r}
@@ -281,13 +312,18 @@ codReport(Report_Type = 'joint',
           Article_ID = 'TvdWP', 
           Insufficient_Information_Errors = 0,
           Decision_Errors = 0, 
-          Major_Numerical_Errors = 8, 
-          Minor_Numerical_Errors = 0)
+          Major_Numerical_Errors = 1, 
+          Minor_Numerical_Errors = 1)
 ```
 
 
 Means and differences for each of the comparison conditions were consistent with the values that the authors reported. However, we had difficulty matching the 95% confidence intervals that were reported. We attempted to manually calculate the confidence intervals with the formula they printed in footnote 2 on p. 368, but the confidence intervals that we obtained did not match theirs. However, they did match values we obtained when we ran t-tests on their comparisons of interest (with slight rounding errors).
 
+Update: Author sent us their analysis code, where we found their implementation of the confidence intervals formula. Their code has a parentheses error which resulted in an incorrect calculation of the pooled standard deviation. When we recalculated the confidence intervals using their (faulty) formula for the pooled SD, we were able to reproduce most of their confidence intervals with mostly no errors: there was still one minor numerical error and one major numerical error.
+
+
 ```{r session_info, include=TRUE, echo=TRUE, results='markup'}
 devtools::session_info()
 ```
+
+
