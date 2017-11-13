@@ -9,8 +9,10 @@ output:
 #### Article ID: TvdWP
 #### Pilot: Mika Asaba
 #### Co-pilot: Bria Long
-#### Start date: 011/03/2017
-#### End date: 06/09/2017
+#### Start date: Mar 1 2017
+#### End date: Jun 9 2017
+#### Final verification: Tom Hardwicke
+#### Date: Nov 13 2017
 
 -------
 
@@ -23,20 +25,21 @@ Pariticpants were given a hypothetical portfolio of 100 euros and were asked to 
 
 The researchers were interested in how shock affected risk-taking behavior. The measure of risk taking **R** is defined as the **proportion of a person’s investment in the index fund (vs. the safe cash deposit)**.
 
-1. Shock (Shock experience + Shock description) vs. No-Shock (No-shock experience + No-shock description): Shock vs. No-shock groups took similar financial risks (shock condition; Rs = 29.7%) as did participants who were unaware of the trend (no-shock condition; Rns = 32.5%), Rs–ns = −2.8%, 95% CI [−7.2%, 1.6%].
+> 1. Shock (Shock experience + Shock description) vs. No-Shock (No-shock experience + No-shock description): Shock vs. No-shock groups took similar financial risks (shock condition; Rs = 29.7%) as did participants who were unaware of the trend (no-shock condition; Rns = 32.5%), Rs–ns = −2.8%, 95% CI [−7.2%, 1.6%].
 
-2. Shock description vs. No-shock description: Participants who learned from description took almost identical risk in the shock (Rsd = 37.1%) and no-shock conditions (Rnsd = 38.1%), Rsd–nsd = −1% [−7%, 5%]. 
+> 2. Shock description vs. No-shock description: Participants who learned from description took almost identical risk in the shock (Rsd = 37.1%) and no-shock conditions (Rnsd = 38.1%), Rsd–nsd = −1% [−7%, 5%]. 
 
-3. Shock experience vs. No-shock experience: Participants in the shock experience condition took less risk (Rse = 22.4%) than did participants in the no-shock experience condition (Rnse = 26.9%). Although this difference in the average R may not indicate a true population difference, Rse–nse = −4.5% [−11%, 1.7%], 
+> 3. Shock experience vs. No-shock experience: Participants in the shock experience condition took less risk (Rse = 22.4%) than did participants in the no-shock experience condition (Rnse = 26.9%). Although this difference in the average R may not indicate a true population difference, Rse–nse = −4.5% [−11%, 1.7%], 
 
-4. Shock experience vs. Shock description: Participants who experienced the shock also took less risk than participants who learned about it from description, Rse–sd = −14.7% [−20%, −0.1%].
+> 4. Shock experience vs. Shock description: Participants who experienced the shock also took less risk than participants who learned about it from description, Rse–sd = −14.7% [−20%, −0.1%].
 
 ------
 
-The chunk below sets up some formatting options for the R Markdown document
-
 ```{r global_options, include=FALSE}
 knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
+
+# prepare an empty report object, we will update this each time we run compareValues2()
+reportObject <- data.frame("Article_ID" = NA, "valuesChecked" = 0, "eyeballs" = 0, "Total_df" = 0, "Total_p" = 0, "Total_mean" = 0, "Total_sd" = 0, "Total_se" = 0, "Total_ci" = 0, "Total_bf" = 0, "Total_t" = 0, "Total_F" = 0, "Total_es" = 0, "Total_median" = 0, "Total_irr" = 0, "Total_r" = 0, "Total_z" = 0, "Total_coeff" = 0, "Total_n" = 0, "Total_x2" = 0, "Total_other" = 0, "Insufficient_Information_Errors" = 0, "Decision_Errors" = 0, "Major_Numerical_Errors" = 0, "Minor_Numerical_Errors" = 0, "Major_df" = 0, "Major_p" = 0, "Major_mean" = 0, "Major_sd" = 0, "Major_se" = 0, "Major_ci" = 0, "Major_bf" = 0, "Major_t" = 0, "Major_F" = 0, "Major_es" = 0, "Major_median" = 0, "Major_irr" = 0, "Major_r" = 0, "Major_z" = 0, "Major_coeff" = 0, "Major_n" = 0, "Major_x2" = 0, "Major_other" = 0, "affectsConclusion" = NA, "error_typo" = 0, "error_specification" = 0, "error_analysis" = 0, "error_data" = 0, "error_unidentified" = 0, "Author_Assistance" = NA, "resolved_typo" = 0, "resolved_specification" = 0, "resolved_analysis" = 0, "resolved_data" = 0, "correctionSuggested" = NA, "correctionPublished" = NA)
 ```
 
 ## Step 1: Load packages
@@ -98,46 +101,46 @@ d_Desc = full_join(d_ShockDesc,d_NoShockDesc)
 
 # Mean of shock condition, collapsed across exposure type
 mean_Shock = mean(d_Shock$mean_perc) 
-compareValues(reportedValue = 29.7, obtainedValue = mean_Shock*100) 
+reportObject <- compareValues2(reportedValue = "29.7", obtainedValue = mean_Shock*100, valueType = 'mean') 
 
 # Mean of no shock condition, collapsed across exposure type
 mean_NoShock = mean(d_NoShock$mean_perc) 
-compareValues(reportedValue = 32.5, obtainedValue = mean_NoShock*100)
+reportObject <- compareValues2(reportedValue = "32.5", obtainedValue = mean_NoShock*100, valueType = 'mean')
 
 # Mean of shock-description condition
 mean_ShockDesc = mean(d_ShockDesc$mean_perc) 
-compareValues(reportedValue = 37.1, obtainedValue = mean_ShockDesc*100)
+reportObject <- compareValues2(reportedValue = "37.1", obtainedValue = mean_ShockDesc*100, valueType = 'mean')
 
 # Mean of no-shock description condition
 mean_NoShockDesc = mean(d_NoShockDesc$mean_perc) 
-compareValues(reportedValue = 38.1, obtainedValue = mean_NoShockDesc*100)
+reportObject <- compareValues2(reportedValue = "38.1", obtainedValue = mean_NoShockDesc*100, valueType = 'mean')
 
 # Mean of shock experience condition
 mean_ShockExp = mean(d_ShockExp$mean_perc)
-compareValues(reportedValue = 22.4, obtainedValue = mean_ShockExp*100)
+reportObject <- compareValues2(reportedValue = "22.4", obtainedValue = mean_ShockExp*100, valueType = 'mean')
 
 # Mean of no shock experience condition
 mean_NoShockExp = mean(d_NoShockExp$mean_perc) 
-compareValues(reportedValue = 26.9, obtainedValue = mean_NoShockExp*100)
+reportObject <- compareValues2(reportedValue = "26.9", obtainedValue = mean_NoShockExp*100, valueType = 'mean')
 
 
 ##### Difference in Means #####
 
 #1. Shock vs. No-Shock
 diff_Shock_NoShock = mean_Shock - mean_NoShock
-compareValues(reportedValue = -2.8, obtainedValue = diff_Shock_NoShock*100)
+reportObject <- compareValues2(reportedValue = "-2.8", obtainedValue = diff_Shock_NoShock*100, valueType = 'mean')
 
 #2. Shock Desc vs. No-Shock Desc
 diff_Desc = mean_ShockDesc - mean_NoShockDesc
-compareValues(reportedValue = -1, obtainedValue = diff_Desc*100)
+reportObject <- compareValues2(reportedValue = "-1", obtainedValue = diff_Desc*100, valueType = 'mean')
 
 #3. Shock Experience vs. No-Shock Experience
 diff_Exp = mean_ShockExp - mean_NoShockExp
-compareValues(reportedValue = -4.5, obtainedValue = diff_Exp*100)
+reportObject <- compareValues2(reportedValue = "-4.5", obtainedValue = diff_Exp*100, valueType = 'mean')
 
 #4. Shock Experience vs. Shock Description
 diff_ShockExpDesc = mean_ShockExp - mean_ShockDesc
-compareValues(reportedValue = -14.7, obtainedValue = diff_ShockExpDesc*100)
+reportObject <- compareValues2(reportedValue = "-14.7", obtainedValue = diff_ShockExpDesc*100, valueType = 'mean')
 
 ```
 
@@ -193,12 +196,12 @@ interval_lower_1 = diff_Shock_NoShock - (critical_t_1*sp_authors_1*a_1)
 # our calculations match confidence intervals from t-test output 
 ttest_ShockvNoShock=t.test(d_Shock$mean_perc,d_NoShock$mean_perc, paired = FALSE, var.equal = FALSE)
 # rounding errors here, don't match exactly but pretty close.
-#compareValues(interval_lower_1,ttest_ShockvNoShock$conf.int[1])
-#compareValues(interval_upper_1,ttest_ShockvNoShock$conf.int[2])
+#reportObject <- compareValues2(interval_lower_1,ttest_ShockvNoShock$conf.int[1])
+#reportObject <- compareValues2(interval_upper_1,ttest_ShockvNoShock$conf.int[2])
 
 # compare reported values to our calcuations
-compareValues(reportedValue = -7.2, obtainedValue = interval_lower_1*100)
-compareValues(reportedValue = 1.6, obtainedValue = interval_upper_1*100)
+reportObject <- compareValues2(reportedValue = "-7.2", obtainedValue = interval_lower_1*100, valueType = 'ci')
+reportObject <- compareValues2(reportedValue = "1.6", obtainedValue = interval_upper_1*100, valueType = 'ci')
 
 #2. Shock Description vs. No-Shock Description
 # get df (# of participants 1st group + # of participants 2nd group - 2)
@@ -227,12 +230,12 @@ interval_lower_2 = diff_Desc - (critical_t_2*sp_authors_2*a_2)
 # our calculations match confidence intervals from t-test output 
 ttest_ShockvNoShockDesc=t.test(d_ShockDesc$mean_perc,d_NoShockDesc$mean_perc, paired = FALSE, var.equal = FALSE)
 # rounding errors here, don't match exactly but pretty close.
-#compareValues(interval_lower_2,ttest_ShockvNoShockDesc$conf.int[1])
-#compareValues(interval_upper_2,ttest_ShockvNoShockDesc$conf.int[2])
+#reportObject <- compareValues2(interval_lower_2,ttest_ShockvNoShockDesc$conf.int[1])
+#reportObject <- compareValues2(interval_upper_2,ttest_ShockvNoShockDesc$conf.int[2])
 
 # compare reported values to our calcuations
-compareValues(reportedValue = -7, obtainedValue = interval_lower_2*100)
-compareValues(reportedValue = 5, obtainedValue = interval_upper_2*100)
+reportObject <- compareValues2(reportedValue = "-7", obtainedValue = interval_lower_2*100, valueType = 'ci')
+reportObject <- compareValues2(reportedValue = "5", obtainedValue = interval_upper_2*100, valueType = 'ci')
 
 #3. Shock Experience vs. No-Shock Experience
 # get df (# of participants 1st group + # of participants 2nd group - 2)
@@ -261,12 +264,12 @@ interval_lower_3 = diff_Exp - (critical_t_3*sp_authors_3*a_3)
 # our calculations match confidence intervals from t-test output 
 ttest_ShockvNoShockExp=t.test(d_ShockExp$mean_perc,d_NoShockExp$mean_perc, paired = FALSE, var.equal = FALSE)
 # rounding errors here, don't match exactly but pretty close.
-#compareValues(interval_lower_3,ttest_ShockvNoShockExp$conf.int[1])
-#compareValues(interval_upper_3,ttest_ShockvNoShockExp$conf.int[2])
+#reportObject <- compareValues2(interval_lower_3,ttest_ShockvNoShockExp$conf.int[1])
+#reportObject <- compareValues2(interval_upper_3,ttest_ShockvNoShockExp$conf.int[2])
 
 # compare reported values to our calcuations
-compareValues(reportedValue = -11, obtainedValue = interval_lower_3*100)
-compareValues(reportedValue = 1.7, obtainedValue = interval_upper_3*100)
+reportObject <- compareValues2(reportedValue = "-11", obtainedValue = interval_lower_3*100, valueType = 'ci')
+reportObject <- compareValues2(reportedValue = "1.7", obtainedValue = interval_upper_3*100, valueType = 'ci')
 
 #4. Shock Experience vs. Shock Description
 # get df (# of participants 1st group + # of participants 2nd group - 2)
@@ -295,32 +298,71 @@ interval_upper_4 = diff_ShockExpDesc + (critical_t_4*sp_authors_4*a_4)
 # our calculations match confidence intervals from t-test output 
 ttest_ShockExpvShockDesc=t.test(d_ShockExp$mean_perc,d_ShockDesc$mean_perc, paired = FALSE, var.equal = FALSE)
 # rounding errors here, don't match exactly but pretty close.
-#compareValues(interval_lower_4,ttest_ShockExpvShockDesc$conf.int[1])
-#compareValues(interval_upper_4,ttest_ShockExpvShockDesc$conf.int[2])
+#reportObject <- compareValues2(interval_lower_4,ttest_ShockExpvShockDesc$conf.int[1])
+#reportObject <- compareValues2(interval_upper_4,ttest_ShockExpvShockDesc$conf.int[2])
 
 # compare reported values to our calcuations
-compareValues(reportedValue = -20, obtainedValue = interval_lower_4*100)
-compareValues(reportedValue = -.1, obtainedValue = interval_upper_4*100)
+reportObject <- compareValues2(reportedValue = "-20", obtainedValue = interval_lower_4*100, valueType = 'ci')
+reportObject <- compareValues2(reportedValue = "-.1", obtainedValue = interval_upper_4*100, valueType = 'ci')
 ```
 
-Rse–sd = −14.7% [−20%, −0.1%].
 
 ## Step 5: Conclusion
-
-```{r}
-codReport(Report_Type = 'joint',
-          Article_ID = 'TvdWP', 
-          Insufficient_Information_Errors = 0,
-          Decision_Errors = 0, 
-          Major_Numerical_Errors = 1, 
-          Minor_Numerical_Errors = 1)
-```
-
 
 Means and differences for each of the comparison conditions were consistent with the values that the authors reported. However, we had difficulty matching the 95% confidence intervals that were reported. We attempted to manually calculate the confidence intervals with the formula they printed in footnote 2 on p. 368, but the confidence intervals that we obtained did not match theirs. However, they did match values we obtained when we ran t-tests on their comparisons of interest (with slight rounding errors).
 
 Update: Author sent us their analysis code, where we found their implementation of the confidence intervals formula. Their code has a parentheses error which resulted in an incorrect calculation of the pooled standard deviation. When we recalculated the confidence intervals using their (faulty) formula for the pooled SD, we were able to reproduce most of their confidence intervals with mostly no errors: there was still one minor numerical error and one major numerical error.
 
+```{r}
+reportObject$Article_ID <- "TvdWP"
+reportObject$affectsConclusion <- "no"
+reportObject$error_typo <- 0
+reportObject$error_specification <- 0
+reportObject$error_analysis <- 0
+reportObject$error_data <- 0
+reportObject$error_unidentified <- 1
+reportObject$Author_Assistance <- T
+reportObject$resolved_typo <- 0
+reportObject$resolved_specification <- 0
+reportObject$resolved_analysis <- 1
+reportObject$resolved_data <- 0
+reportObject$correctionSuggested <- "no"
+reportObject$correctionPublished <- F
+
+# decide on final outcome
+if(reportObject$Decision_Errors > 0 | reportObject$Major_Numerical_Errors > 0 | reportObject$Insufficient_Information_Errors > 0){
+  reportObject$finalOutcome <- "Failure"
+  if(reportObject$Author_Assistance == T){
+    reportObject$finalOutcome <- "Failure despite author assistance"
+  }
+}else{
+  reportObject$finalOutcome <- "Success"
+  if(reportObject$Author_Assistance == T){
+    reportObject$finalOutcome <- "Success with author assistance"
+  }
+}
+
+# save the report object
+filename <- paste0("reportObject_", reportObject$Article_ID,".csv")
+write_csv(reportObject, filename)
+```
+
+## Report Object
+
+```{r, echo = FALSE}
+# display report object in chunks
+kable(reportObject[2:10], align = 'l')
+kable(reportObject[11:20], align = 'l')
+kable(reportObject[21:25], align = 'l')
+kable(reportObject[26:30], align = 'l')
+kable(reportObject[31:35], align = 'l')
+kable(reportObject[36:40], align = 'l')
+kable(reportObject[41:45], align = 'l')
+kable(reportObject[46:51], align = 'l')
+kable(reportObject[52:57], align = 'l')
+```
+
+## Session information
 
 ```{r session_info, include=TRUE, echo=TRUE, results='markup'}
 devtools::session_info()
